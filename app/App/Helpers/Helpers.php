@@ -1,4 +1,7 @@
 <?php
+include_once "GenerarNumeros.php";
+
+use App\Models\TableModel;
 
 function base_url()
 {
@@ -63,4 +66,36 @@ function dep($data, $exit = 0)
     $format .= print_r('</pre>');
     ($exit != 0) ? $format .= exit : '';
     return $format;
+}
+
+function centinela()
+{
+    $model = new TableModel();
+    $model->setTable('sis_centinela');
+    $model->setId('idcentinela');
+    $method = $_SERVER['REQUEST_METHOD'] ?? 'none';
+    $url = $_SERVER['REQUEST_URI'] ?? 'no existe';
+    $agente = $_SERVER['HTTP_USER_AGENT'] ?? 'No existe';
+    $ipHeaders = array(
+        'REMOTE_ADDR' => 'IP',
+        'HTTP_CLIENT_IP' => 'IP',
+        'HTTP_X_FORWARDED_FOR' => 'IP',
+        'HTTP_X_FORWARDED' => 'IP',
+        'HTTP_CF_CONNECTING_IP' => 'ip'
+    );
+    $ip = '';
+    foreach ($ipHeaders as $header => $label) {
+        if (isset($_SERVER[$header]) && $_SERVER[$header] !== '') {
+            $ip .= " $label: " . $_SERVER[$header];
+        }
+    }
+    $model->create(
+        [
+            "codigo" => generar_numeros(['length' => 4, "unique" => true]),
+            "ip" => $ip,
+            "agente" => $agente,
+            "method" => $method,
+            "url" => $url,
+        ],
+    );
 }

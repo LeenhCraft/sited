@@ -10,6 +10,7 @@ class Controller
         if (session_status() == PHP_SESSION_NONE) {
             session_start();
         }
+        centinela();
     }
 
     public function view($route, $data = [])

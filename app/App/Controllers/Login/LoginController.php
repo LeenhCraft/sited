@@ -1,10 +1,10 @@
 <?php
 
-namespace App\Controllers\Home;
+namespace App\Controllers\Login;
 
 use App\Core\Controller;
 
-class HomeController extends Controller
+class LoginController extends Controller
 {
     public function __construct()
     {
@@ -13,8 +13,8 @@ class HomeController extends Controller
 
     public function index($request,  $response, $args)
     {
-        return $this->render($response, "Home.Home", [
-            "titulo_web" => "Inicio",
+        return $this->render($response, "LoginDashboard.Login", [
+            "titulo_web" => "Iniciar Sesión",
             "url" => $request->getUri()->getPath()
         ]);
     }
