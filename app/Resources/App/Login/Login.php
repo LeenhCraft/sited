@@ -63,7 +63,7 @@
                     </a>
                 </div>
                 <div class="card">
-                    <div class="card-body">
+                    <div class="card-body card-content">
                         <!-- Logo -->
                         <div class="app-brand justify-content-center">
                             <a href="/admin/login" class="app-brand-link gap-2">
@@ -99,6 +99,18 @@
                                 <span>¿Ha olvidado tu contraseña?</span>
                             </a>
                         </p>
+                    </div>
+                    <div class="card-body card-success" style="display: none;">
+                        <div class="app-brand justify-content-center">
+                            <a href="/admin/login" class="app-brand-link gap-2">
+                                <picture>
+                                    <source srcset="/img/logo-dark.png" type="image/webp">
+                                    <img src="/img/logo-dark.png" alt="<?= $_ENV["APP_NAME"]; ?>" class="app-brand-logo w-px-150">
+                                </picture>
+                            </a>
+                        </div>
+                        <h4 class="fs-1 ff-niconne mb-2 text-center">Laboratorio Ucss</h4>
+                        <p class="fs-2 text-center text-success">Redirigiendo...</p>
                     </div>
                 </div>
                 <!-- /Register -->

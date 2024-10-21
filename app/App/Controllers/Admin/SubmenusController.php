@@ -227,6 +227,7 @@ class SubMenusController extends Controller
             $model->setId("idsubmenu");
             $arrData = $model
                 ->join("sis_permisos", "sis_permisos.idsubmenu", "sis_submenus.idsubmenu")
+                ->where("sis_submenus.idsubmenu", $data["id"])
                 ->first();
             if (!empty($arrData)) {
                 return $this->respondWithError($response, "No se puede eliminar el submenu, ya que tiene permisos asignados");

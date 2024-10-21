@@ -1,4 +1,5 @@
 $(document).ready(function () {
+  // $(".card-success").hide();
   $("#frmlogin").submit(function (event) {
     event.preventDefault();
     const form = $(this).serialize();
@@ -7,13 +8,15 @@ $(document).ready(function () {
       .done(function (data) {
         const { status, message, data: responseData } = data;
         const titleMessage = status ? `${message}<br>${responseData}` : message;
-        Swal.fire({
+        Toast.fire({
           title: titleMessage,
           icon: status ? "success" : "error",
-          confirmButtonText: "OK",
+          position: "top",
         });
         if (status) {
-          setTimeout(() => window.location.reload(), 2000);
+          $(".card-success").show();
+          $(".card-content").hide();
+          setTimeout(() => window.location.reload(), 1100);
         }
       })
       .fail(function (jqXHR, textStatus, errorThrown) {
