@@ -40,45 +40,12 @@
 <body>
     <div class="layout-wrapper layout-content-navbar">
         <div class="layout-container">
-            <aside id="layout-menu" class="layout-menu menu-vertical menu bg-menu-theme">
-                <div class="app-brand demo">
-                    <a href="/admin" class="app-brand-link">
-                        <span class=" demo menu-text fw-bolder ms-2 app-header__logo">Laboratorio</span>
-                    </a>
-                </div>
-
-                <div class="menu-inner-shadow"></div>
-
-                <ul class="menu-inner py-1">
-                    <li class="menu-item ">
-                        <a href="javascript:void(0);" class="menu-link menu-toggle">
-                            <i class="menu-icon tf-icons bx bx-lock-open-alt"></i>
-                            <div data-i18n="Layouts" class="text-capitalize">Maestras</div>
-                        </a>
-
-                        <ul class="menu-sub">
-                            <li class="menu-item ">
-                                <a href="/admin/menus" class="menu-link">
-                                    <div data-i18n="Menús" class="d-flex justify-content-between align-items-center">
-                                        <i class="menu-icon tf-icons bx bx-menu"></i>
-                                        <span>
-                                            Menús </span>
-                                    </div>
-                                </a>
-                            </li>
-                            <li class="menu-item ">
-                                <a href="/admin/permisos" class="menu-link">
-                                    <div data-i18n="Permisos" class="d-flex justify-content-between align-items-center">
-                                        <i class="menu-icon tf-icons bx bx-key"></i>
-                                        <span>
-                                            Permisos </span>
-                                    </div>
-                                </a>
-                            </li>
-                        </ul>
-                    </li>
-                </ul>
-            </aside>
+            <!-- Menu -->
+            <?php
+            include_once __DIR__ . '/MenuDashboard.php';
+            $arrData = usuario();
+            ?>
+            <!-- / Menu -->
             <div class="layout-page">
                 <!-- Navbar -->
                 <nav class="layout-navbar container-xxl navbar navbar-expand-xl navbar-detached align-items-center bg-navbar-theme" id="layout-navbar">
@@ -92,7 +59,7 @@
                             <div class="navbar-nav align-items-center w-100">
                                 <div class="nav-item d-flex align-items-center w-100">
                                     <a class="w-100 border-0 app-header__logo text-dark text-start text-break user-select-none">
-                                        <span>Bienvenido</span> <?php echo $nombre['nombre'] ?? "UNDEFINED"; ?>
+                                        <span>Bienvenido</span> <?php echo $arrData['nombre'] ?? "UNDEFINED"; ?>
                                     </a>
                                 </div>
                             </div>
@@ -103,7 +70,7 @@
                             <li class="nav-item navbar-dropdown dropdown-user dropdown">
                                 <a class="nav-link dropdown-toggle hide-arrow" href="javascript:void(0);" data-bs-toggle="dropdown">
                                     <div class="avatar avatar-online">
-                                        <img src="/img/placeholder-150x150.png" alt class="w-px-40 h-auto rounded-circle" />
+                                        <img src="/img/default.png" alt class="w-px-40 h-auto rounded-circle" />
                                     </div>
                                 </a>
                                 <ul class="dropdown-menu dropdown-menu-end">
@@ -112,12 +79,12 @@
                                             <div class="d-flex">
                                                 <div class="flex-shrink-0 me-3">
                                                     <div class="avatar avatar-online">
-                                                        <img src="/img/placeholder-150x150.png" alt class="w-px-40 h-auto rounded-circle" />
+                                                        <img src="/img/default.png" alt class="w-px-40 h-auto rounded-circle" />
                                                     </div>
                                                 </div>
                                                 <div class="flex-grow-1">
-                                                    <span class="fw-semibold d-block"><?php echo $nombre['nombre'] ?? "UNDEFINED"; ?></span>
-                                                    <small class="text-muted"><?php echo $nombre['rol'] ?? "UNDEFINED"; ?></small>
+                                                    <span class="fw-semibold d-block"><?php echo $arrData['nombre'] ?? "UNDEFINED"; ?></span>
+                                                    <small class="text-muted"><?php echo $arrData['rol'] ?? "UNDEFINED"; ?></small>
                                                 </div>
                                             </div>
                                         </a>

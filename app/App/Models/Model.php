@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use mysqli;
+use Nette\Utils\Callback;
 
 class Model
 {
@@ -17,6 +18,7 @@ class Model
     protected $id = "id";
 
     protected $sql, $data = [], $params = null;
+    protected $unionAll = "";
     protected $select = "*";
     protected $where, $values = [];
 
@@ -60,8 +62,11 @@ class Model
 
     public function select(...$columns)
     {
-        $this->select = implode(', ', $columns);
-
+        if ($this->select != "*") {
+            $this->select .= ", " . implode(', ', $columns);
+        } else {
+            $this->select = implode(', ', $columns);
+        }
         return $this;
     }
 
@@ -92,6 +97,22 @@ class Model
             $this->join .= " LEFT JOIN {$table} ON {$first} {$operator} {$second}";
         } else {
             $this->join = " LEFT JOIN {$table} ON {$first} {$operator} {$second}";
+        }
+
+        return $this;
+    }
+
+    public function rightJoin($table, $first, $operator = "=", $second = null)
+    {
+        if ($second === null) {
+            $second = $operator;
+            $operator = "=";
+        }
+
+        if ($this->join) {
+            $this->join .= " RIGHT JOIN {$table} ON {$first} {$operator} {$second}";
+        } else {
+            $this->join = " RIGHT JOIN {$table} ON {$first} {$operator} {$second}";
         }
 
         return $this;
@@ -135,7 +156,11 @@ class Model
     {
         if (is_callable($column)) {
             $tempWhere = $this->where; //guardamos el where actual
-            $tempWhere .= " OR (";
+            if ($tempWhere == "") {
+                $tempWhere = " (" . $tempWhere;
+            } else {
+                $tempWhere .= " OR (";
+            }
             $this->where = "";
             $column($this);
             $temp2Where = $this->where;
@@ -238,6 +263,13 @@ class Model
 
     public function get()
     {
+        if (!empty($this->unionAll)) {
+            $sql = $this->unionAll;
+
+            $this->query($sql, $this->values, $this->params);
+
+            return $this->query->fetch_all(MYSQLI_ASSOC);
+        }
         if (empty($this->query)) {
 
             /* if (empty($this->sql)) {
@@ -369,6 +401,22 @@ class Model
         ];
     }
 
+    // funcion union all
+    public function unionAll(array $data = [])
+    {
+        if ($this->unionAll) {
+            $this->unionAll .= " UNION ALL " . $data["sql"];
+        } else {
+            $this->unionAll = $data["sql"];
+        }
+        if (!empty($this->values)) {
+            $this->values = array_merge($this->values, $data["values"]);
+        } else {
+            $this->values = $data["values"];
+        }
+
+        return $this;
+    }
 
     //consulttas preparadas
     public function all()
@@ -377,27 +425,53 @@ class Model
         return $this->query($sql)->get();
     }
 
-    public function find($id)
+    public function find($id, $isUuid = false)
     {
-        $sql = "SELECT * FROM {$this->table} WHERE {$this->id} = ?";
-        return $this->query($sql, [$id], "i")->first();
+        // $sql = "SELECT {$this->select} FROM {$this->table} WHERE {$this->id} = ?";
+        // return $this->query($sql, [$id], "i")->first();
+        $paramType = $isUuid ? 's' : 'i';
+        $sql = "SELECT {$this->select} FROM {$this->table} WHERE {$this->id} = ?";
+        return $this->query($sql, [$id], $paramType)->first();
     }
 
     public function create($data)
     {
-        $columns = implode(", ", array_keys($data));
-        // $values = "'" . implode("', '", array_values($data)) . "'";
-        $values = array_values($data);
+        // $columns = implode(", ", array_keys($data));
+        // // $values = "'" . implode("', '", array_values($data)) . "'";
+        // $values = array_values($data);
 
-        // $sql = "INSERT INTO {$this->table} ({$columns}) VALUES ({$values})";
+        // // $sql = "INSERT INTO {$this->table} ({$columns}) VALUES ({$values})";
+        // $sql = "INSERT INTO {$this->table} ({$columns}) VALUES (" . str_repeat("?,", count($values) - 1) . "?)";
+        // $this->query($sql, $values);
+        // $insert_id = $this->connection->insert_id;
+
+        // return $this->find($insert_id);
+
+        $columns = implode(", ", array_keys($data));
+        $values = array_values($data);
         $sql = "INSERT INTO {$this->table} ({$columns}) VALUES (" . str_repeat("?,", count($values) - 1) . "?)";
         $this->query($sql, $values);
         $insert_id = $this->connection->insert_id;
-        return $this->find($insert_id);
+
+        // Determinar el tipo de ID (int o string)
+        $isuuid = is_int($insert_id) ? false : true;
+
+        return $this->find($insert_id, $isuuid);
     }
 
-    public function update($id, $data)
+    public function update($id, $data, $isUuid = false)
     {
+        // $fields = [];
+        // foreach ($data as $key => $value) {
+        //     $fields[] = "{$key} = ?";
+        // }
+        // $fields = implode(", ", $fields);
+        // $sql = "UPDATE {$this->table} SET {$fields} WHERE {$this->id} = ?";
+        // $values = array_values($data);
+        // $values[] = $id;
+        // $this->query($sql, $values);
+        // return $this->find($id);
+
         $fields = [];
         foreach ($data as $key => $value) {
             $fields[] = "{$key} = ?";
@@ -406,14 +480,17 @@ class Model
         $sql = "UPDATE {$this->table} SET {$fields} WHERE {$this->id} = ?";
         $values = array_values($data);
         $values[] = $id;
-        $this->query($sql, $values);
-        return $this->find($id);
+        $isUuid = is_int($id) ? false : true;
+        $paramType = $isUuid ? 's' : 'i';
+        $this->query($sql, $values, str_repeat("s", count($data)) . $paramType);
+        return $this->find($id, $isUuid);
     }
 
-    public function delete($id)
+    public function delete($id, $isUuid = false)
     {
+        $paramType = $isUuid ? 's' : 'i';
         $sql = "DELETE FROM {$this->table} WHERE {$this->id} = ?";
-        $this->query($sql, [$id], 'i');
+        $this->query($sql, [$id], $paramType);
         return $this->connection->affected_rows;
     }
 
@@ -421,5 +498,46 @@ class Model
     public function multiQuery($sql)
     {
         return $this->connection->multi_query($sql);
+    }
+
+    public function previewSql(): array
+    {
+        // dep("aca");
+        // dep($this->unionAll);
+        if (!empty($this->unionAll)) {
+
+            dep("union all");
+            $sql = $this->unionAll;
+
+            $params = $this->values;
+
+            return ['sql' => $sql, 'values' => $params];
+        }
+
+        // dep("paso",1);
+        $sql = "SELECT {$this->select} FROM {$this->table}";
+
+        if ($this->join) {
+            $sql .= $this->join;
+        }
+
+        $params = [];
+
+        if ($this->where) {
+            $sql .= " WHERE {$this->where}";
+            // Supongamos que $this->whereParams es un arreglo asociativo de parámetros
+            $params = $this->values;
+        }
+
+        if ($this->orderBy) {
+            $sql .= " ORDER BY {$this->orderBy}";
+        }
+
+        if ($this->limit) {
+            $sql .= $this->limit;
+        }
+
+        // Devuelve un arreglo con la consulta SQL y los parámetros
+        return ['sql' => $sql, 'values' => $params];
     }
 }
