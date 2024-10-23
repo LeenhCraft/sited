@@ -23,7 +23,20 @@ $(document).ready(function () {
           return meta.row + 1;
         },
       },
-      { data: "men_nombre" },
+      {
+        data: null,
+        render: function (data, type, row, meta) {
+          const icono = data.men_icono;
+          const nombre = data.men_nombre;
+          // const prefijo = icono.startsWith("bx")
+          //   ? "bx"
+          //   : icono.startsWith("fa")
+          //   ? "fa"
+          //   : "";
+          // const claseIcono = prefijo ? `${prefijo} ${icono}` : icono;
+          return `<i class="${icono} me-2"></i>${nombre}`;
+        },
+      },
       { data: "men_orden", class: "text-center" },
       {
         data: null,
@@ -254,3 +267,7 @@ function generateDropdownOption(text, iconClass, onClickFunction) {
       `;
   }
 }
+
+$("#btnRecargar").on("click", function () {
+  tb.api().ajax.reload();
+});

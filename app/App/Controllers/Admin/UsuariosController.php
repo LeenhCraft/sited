@@ -27,12 +27,14 @@ class UsuariosController extends Controller
             'titulo_web' => 'Usuarios',
             "url" => $request->getUri()->getPath(),
             "permisos" => $this->permisos,
-            "js" => ["js/app/nw_usu.js"],
-            "tk" => [
-                "name" => $this->guard->getTokenNameKey(),
-                "value" => $this->guard->getTokenValueKey(),
-                "key" => $this->guard->generateToken()
-            ]
+            "css" => [
+                "/vendor/select2/select2/dist/css/select2.min.css",
+                "/css/select2-custom.css",
+            ],
+            "js" => [
+                "/vendor/select2/select2/dist/js/select2.full.min.js",
+                "/js/admin/nw_usu.js"
+            ],
         ]);
     }
 
@@ -44,12 +46,18 @@ class UsuariosController extends Controller
         $model = new TableModel;
         $model->setTable("sis_usuarios");
         $model->setId("idusuario");
-        $arrData = $model->get();
+        $arrData = $model
+            ->select(
+                "sis_usuarios.idusuario as id",
+                "sis_usuarios.usu_usuario as user",
+                "sis_rol.rol_nombre as rol",
+                "sis_usuarios.usu_activo as activo",
+                "sis_usuarios.usu_estado as estado",
+            )
+            ->join("sis_rol", "sis_usuarios.idrol", "sis_rol.idrol")
+            ->get();
 
-        $num = 1;
         for ($i = 0; $i < count($arrData); $i++) {
-            $num++;
-            $arrData[$i]['num'] = $num;
             $arrData[$i]['delete'] = 0;
             $arrData[$i]['edit'] = 0;
 
@@ -70,6 +78,10 @@ class UsuariosController extends Controller
             return $this->respondWithError($response, "No tiene permisos para realizar esta acción");
         }
         $data = $this->sanitize($request->getParsedBody());
+        if (isset($data["id"]) && !empty($data["id"])) {
+            return $this->update($request, $response);
+        }
+        // return $this->respondWithJson($response, $data);
         $errors = $this->validar($data);
         if (!$errors) {
             $msg = "Verifique los datos ingresados";
@@ -79,7 +91,9 @@ class UsuariosController extends Controller
         $model = new TableModel;
         $model->setTable("sis_usuarios");
         $model->setId("idusuario");
-        $existe = $model->where("usu_usuario", "LIKE", $data['user'])->first();
+        $existe = $model
+            ->where("usu_usuario", "LIKE", $data['user'])
+            ->first();
         if (!empty($existe)) {
             $msg = "Existe un usuario con el mismo nombre";
             return $this->respondWithError($response, $msg);
@@ -126,8 +140,10 @@ class UsuariosController extends Controller
 
     public function search($request, $response)
     {
+        if ($this->permisos['perm_r'] !== "1") {
+            return $this->respondWithError($response, "No tiene permisos para realizar esta acción");
+        }
         $data = $this->sanitize($request->getParsedBody());
-
         $errors = $this->validarSearch($data);
         if (!$errors) {
             $msg = "Verifique los datos ingresados";
@@ -137,7 +153,15 @@ class UsuariosController extends Controller
         $model = new TableModel;
         $model->setTable("sis_usuarios");
         $model->setId("idusuario");
-        $rq = $model->find($data['id']);
+        $rq = $model
+            ->select(
+                "sis_usuarios.idusuario",
+                "sis_usuarios.idpersona",
+                "sis_usuarios.usu_usuario",
+                "sis_usuarios.usu_estado",
+                "sis_usuarios.idrol",
+            )
+            ->find($data['id']);
         if (!empty($rq)) {
             return $this->respondWithJson($response, ["status" => true, "data" => $rq]);
         }
@@ -155,37 +179,31 @@ class UsuariosController extends Controller
 
     public function update($request, $response)
     {
-        $data = $this->sanitize($request->getParsedBody());
-        // return $this->respondWithJson($response, $data);
-
-        $validate = $this->guard->validateToken($data['csrf_name'], $data['csrf_value']);
-        if (!$validate) {
-            $msg = "Error de validación, por favor recargue la página";
-            return $this->respondWithError($response, $msg);
+        if ($this->permisos['perm_u'] !== "1") {
+            return $this->respondWithError($response, "No tiene permisos para realizar esta acción");
         }
-
+        $data = $this->sanitize($request->getParsedBody());
         $errors = $this->validarUpdate($data);
         if (!$errors) {
             $msg = "Verifique los datos ingresados";
             return $this->respondWithError($response, $msg);
         }
-
         $model = new TableModel;
         $model->setTable("sis_usuarios");
         $model->setId("idusuario");
-
-        $existe = $model->where("usu_usuario", "LIKE", $data['user'])->where("idusuario", "!=", $data['id'])->first();
+        $existe = $model
+            ->where("usu_usuario", "LIKE", $data['user'])
+            ->where("idusuario", "!=", $data['id'])
+            ->first();
         if (!empty($existe)) {
-            $msg = "Ya tiene un usuario registrado con ese nombre";
-            return $this->respondWithError($response, $msg);
+            return $this->respondWithError($response, "Ya tiene un usuario registrado con ese nombre");
         }
-
         $columns = [
             "idrol" => $data["idrol"],
-            "idpersona" => ucwords($data['idpersona']),
+            "idpersona" => intval($data['idpersona']),
             "usu_usuario" => $data['user'],
-            "usu_activo" => $data['status'] ?: 0,
-            "usu_estado" => 1,
+            "usu_estado" => $data['status'] ?? 0,
+            "usu_activo" => 1,
         ];
 
         if (!empty($data['password'])) {
@@ -194,11 +212,9 @@ class UsuariosController extends Controller
 
         $rq = $model->update($data['id'], $columns);
         if (!empty($rq)) {
-            $msg = "Datos actualizados";
-            return $this->respondWithSuccess($response, $msg);
+            return $this->respondWithSuccess($response, "Datos actualizados");
         }
-        $msg = "Error al guardar los datos";
-        return $this->respondWithJson($response, $existe);
+        return $this->respondWithJson($response, "Error al guardar los datos");
     }
 
     private function validarUpdate($data)
@@ -223,8 +239,11 @@ class UsuariosController extends Controller
 
     public function delete($request, $response)
     {
+        if ($this->permisos['perm_d'] !== "1") {
+            return $this->respondWithError($response, "No tiene permisos para realizar esta acción");
+        }
         $data = $this->sanitize($request->getParsedBody());
-        if (empty($data["id"])) {
+        if (isset($data["id"]) && empty($data["id"])) {
             return $this->respondWithError($response, "Error de validación, por favor recargue la página");
         }
         $model = new TableModel;
@@ -234,14 +253,11 @@ class UsuariosController extends Controller
         if (!empty($rq)) {
             $rq = $model->delete($data["id"]);
             if (!empty($rq)) {
-                $msg = "Datos eliminados correctamente";
-                return $this->respondWithSuccess($response, $msg);
+                return $this->respondWithSuccess($response, "Datos eliminados correctamente.");
             }
-            $msg = "Error al eliminar los datos";
-            return $this->respondWithError($response, $msg);
+            return $this->respondWithError($response, "Error al eliminar los datos.");
         }
-        $msg = "No se encontraron datos para eliminar.";
-        return $this->respondWithError($response, $msg);
+        return $this->respondWithError($response, "No se encontraron datos para eliminar.");
     }
 
     public function roles($request, $response)

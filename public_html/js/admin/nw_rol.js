@@ -7,7 +7,7 @@ $(document).ready(function () {
       url: base_url + "js/dataTable.Spanish.json",
     },
     ajax: {
-      url: base_url + "admin/usuarios",
+      url: base_url + "admin/roles",
       method: "POST",
       dataSrc: "",
     },
@@ -19,20 +19,14 @@ $(document).ready(function () {
           return meta.row + 1;
         },
       },
-      { data: "user" },
-      { data: "rol" },
+      { data: "nombre", className: "text-capitalize" },
       {
-        data: null,
-        width: "10%",
         render: function (data, type, row) {
-          const activo = data.activo
-            ? `<i class='bx bxs-check-circle text-success me-2'></i>Activo`
-            : `<i class='bx bxs-x-circle text-danger me-2'></i>Inactivo`;
-
-          const estado = data.estado
-            ? `<i class='bx bxs-check-circle text-success me-2'></i>Habilitado`
-            : `<i class='bx bxs-x-circle text-danger me-2'></i>Bloqueado`;
-          return `${activo} <br> ${estado}`;
+          const estado =
+            row.estado == 1
+              ? `<i class='bx bxs-check-circle text-success me-2'></i>Habilitado`
+              : `<i class='bx bxs-x-circle text-danger me-2'></i>Bloqueado`;
+          return `${estado}`;
         },
       },
       {
@@ -46,69 +40,6 @@ $(document).ready(function () {
     lengthMenu: [7, 10, 25, 50, 75, 100],
   });
 });
-
-function listRoles() {
-  let ajaxUrl = base_url + "admin/usuarios/roles";
-  $.post(ajaxUrl, function () {})
-    .done(function (data) {
-      if (data.status) {
-        $("#idrol").empty();
-        $("#idrol").append(
-          "<option value='' checked>Seleccione una opción</option>"
-        );
-        $.each(data.data, function (index, value) {
-          $("#idrol").append(
-            "<option value=" + value.id + ">" + value.nombre + "</option>"
-          );
-        });
-      }
-    })
-    .fail(function (jqXHR, textStatus, errorThrown) {
-      Toast.fire({
-        icon: "error",
-        title: "error: " + errorThrown,
-      });
-      console.log(jqXHR, textStatus, errorThrown);
-    })
-    .always(function () {
-      divLoading.css("display", "none");
-    });
-  $("#idrol").select2({
-    width: "100%",
-    placeholder: "Seleccione una opción",
-    dropdownParent: $("#idrol").parent(),
-  });
-}
-
-function listPersonas() {
-  let ajaxUrl = base_url + "admin/usuarios/person";
-  $.post(ajaxUrl, function () {})
-    .done(function (data) {
-      if (data.status) {
-        $("#idpersona").empty();
-        $.each(data.data, function (index, value) {
-          $("#idpersona").append(
-            "<option value=" + value.id + ">" + value.nombre + "</option>"
-          );
-        });
-      }
-    })
-    .fail(function () {
-      Toast.fire({
-        icon: "error",
-        title: "error: " + errorThrown,
-      });
-      console.log(jqXHR, textStatus, errorThrown);
-    })
-    .always(function () {
-      divLoading.css("display", "none");
-    });
-  $("#idpersona").select2({
-    width: "100%",
-    placeholder: "Seleccione una opción",
-    dropdownParent: $("#idpersona").parent(),
-  });
-}
 
 function generateDropdownMenu(row) {
   const editOption = generateDropdownOption(
@@ -148,25 +79,26 @@ function generateDropdownOption(text, iconClass, onClickFunction) {
     `;
   }
 }
+
 //
 $("#btnNuevo").on("click", function () {
   resetForm();
-  $("#modalFormUsuario").modal("show");
+  $("#addModal").modal("show");
 });
 
 $("#btnRecargar").on("click", function () {
   tb.api().ajax.reload();
 });
 
-$("#user_form").submit(function (e) {
+$("#person_form").submit(function (e) {
   e.preventDefault();
   divLoading.css("display", "flex");
-  let formData = $("#user_form").serialize();
-  $.post(base_url + "admin/usuarios/save", formData, function () {})
+  let formData = $("#person_form").serialize();
+  $.post(base_url + "admin/roles/save", formData, function () {})
     .done(function (response) {
       if (response.status) {
         tb.api().ajax.reload();
-        // resetForm();
+        resetForm();
       }
       Swal.fire(
         response.status ? "Éxito" : "Error",
@@ -188,29 +120,21 @@ $("#user_form").submit(function (e) {
     });
 });
 
-function resetForm() {
-  $("#user_form").trigger("reset");
-  $(".title-new-modal span").text("Nuevo Usuario");
-  $("#id").val("");
-  listRoles();
-  listPersonas();
-}
-
 function funEditar(id) {
   resetForm();
   divLoading.css("display", "flex");
-  let ajaxUrl = base_url + "admin/usuarios/search";
+  let ajaxUrl = base_url + "admin/roles/search";
   $.post(ajaxUrl, { id }, function () {})
     .done(function (response) {
-      $("#id").val(response.data.idusuario);
+      $("#id").val(response.data.idrol);
       $(".title-new-modal span").text(
-        "Editar Usuario : " + response.data.usu_usuario
+        "Editar Rol : " + response.data.rol_nombre
       );
-      $("#user").val(response.data.usu_usuario);
-      $("#status").val(response.data.usu_estado);
-      $("#idrol").val(response.data.idrol).trigger("change");
-      $("#idpersona").val(response.data.idpersona).trigger("change");
-      $("#modalFormUsuario").modal("show");
+      $("#code").val(response.data.rol_cod);
+      $("#name").val(response.data.rol_nombre);
+      $("#description").val(response.data.rol_descripcion);
+      $("#status").val(response.data.rol_estado);
+      $("#addModal").modal("show");
     })
     .fail(function (jqXHR, textStatus, errorThrown) {
       Toast.fire({
@@ -237,7 +161,7 @@ function funEliminar(id) {
   }).then((result) => {
     if (result.isConfirmed) {
       divLoading.css("display", "flex");
-      let ajaxUrl = base_url + "admin/usuarios/delete";
+      let ajaxUrl = base_url + "admin/roles/delete";
       $.post(ajaxUrl, { id }, function () {})
         .done(function (response) {
           if (response.status) {
@@ -263,4 +187,10 @@ function funEliminar(id) {
         });
     }
   });
+}
+
+function resetForm() {
+  $("#person_form").trigger("reset");
+  $(".title-new-modal span").text("Nuevo Rol");
+  $("#id").val("");
 }

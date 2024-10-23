@@ -1,20 +1,24 @@
 <!-- Modal -->
 <div class="modal fade" id="modalFormUsuario" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" style="display: none;" aria-hidden="true">
     <div class="modal-dialog modal-sm">
-        <form id="user_form" name="user_form" class="form-horizontal" onsubmit="return save(this,event)">
+        <form id="user_form" name="user_form" class="form-horizontal">
             <div class="modal-content">
                 <div class="modal-header headerRegister">
-                    <h5 class="modal-title" id="titleModal">Nuevo Usuario</h5>
+                    <h5 class="modal-title title-new-modal text-primary">
+                        <i class="fa-solid fa-user-plus me-1"></i>
+                        <span>
+                            Nuevo Usuario
+                        </span>
+                    </h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
                     </button>
                 </div>
                 <div class="modal-body">
-                    <input type="hidden" name="<?= $data['tk']['name'] ?>" value="<?= $data['tk']['key'][$data['tk']['name']]  ?>">
-                    <input type="hidden" name="<?= $data['tk']['value'] ?>" value="<?= $data['tk']['key'][$data['tk']['value']] ?>"> <input type="hidden" id="id" name="id" value="">
+                    <input type="hidden" name="id" id="id">
                     <div class="row mb-2">
                         <div class="form-group col-md-12">
                             <label for="idpersona">Personal</label>
-                            <select class="form-select js-example-basic-singleLNH" name="idpersona" id="idpersona"></select>
+                            <select class="form-select" name="idpersona" id="idpersona"></select>
                         </div>
                     </div>
                     <div class="row mb-2">
@@ -50,7 +54,12 @@
                         <span class="text-capitalize">cerrar</span>
                     </button>
                     <button class="btn btn-primary fw-bold" id="btnActionForm" type="submit">
-                        <span id="btnText">Guardar</span>
+                        <span id="btnText">
+                            <i class='bx bxs-check-shield me-1'></i>
+                            <span>
+                                Guardar
+                            </span>
+                        </span>
                     </button>
                 </div>
             </div>

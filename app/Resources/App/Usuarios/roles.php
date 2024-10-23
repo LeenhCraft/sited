@@ -2,16 +2,21 @@
 <main class="app-content">
     <div class="card">
         <div class="card-header">
-            <div class="tile">
+            <div class="d-flex justify-content-between">
                 <?php
                 if ($data['permisos']['perm_w'] == 1) {
                 ?>
-                    <button class="btn btn-primary ft-b" type="button" onclick="openModal();">
+                    <button id="btnNuevo" class="btn btn-primary" type="button">
+                        <i class='bx bx-plus-medical me-1'></i>
                         Agregar
                     </button>
                 <?php
                 }
                 ?>
+                <button id="btnRecargar" class="btn btn-warning" type="button">
+                    <i class="fa-solid fa-arrow-rotate-right me-1"></i>
+                    Recargar
+                </button>
             </div>
         </div>
         <div class="car-body">
@@ -38,7 +43,7 @@
 
 <?php
 if ($data['permisos']['perm_w'] == 1 || $data['permisos']['perm_u'] == 1) {
-    getModal('mdlRol',$data);
+    getModal('mdlRol', $data);
 }
 footer_web('Template.FooterDashboard', $data);
 ?>

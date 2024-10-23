@@ -7,7 +7,7 @@ $(document).ready(function () {
       url: base_url + "js/dataTable.Spanish.json",
     },
     ajax: {
-      url: base_url + "admin/usuarios",
+      url: base_url + "admin/personas",
       method: "POST",
       dataSrc: "",
     },
@@ -19,20 +19,15 @@ $(document).ready(function () {
           return meta.row + 1;
         },
       },
-      { data: "user" },
-      { data: "rol" },
+      { data: "nombre" },
+      { data: "email" },
       {
-        data: null,
-        width: "10%",
         render: function (data, type, row) {
-          const activo = data.activo
-            ? `<i class='bx bxs-check-circle text-success me-2'></i>Activo`
-            : `<i class='bx bxs-x-circle text-danger me-2'></i>Inactivo`;
-
-          const estado = data.estado
-            ? `<i class='bx bxs-check-circle text-success me-2'></i>Habilitado`
-            : `<i class='bx bxs-x-circle text-danger me-2'></i>Bloqueado`;
-          return `${activo} <br> ${estado}`;
+          const estado =
+            row.estado == 1
+              ? `<i class='bx bxs-check-circle text-success me-2'></i>Habilitado`
+              : `<i class='bx bxs-x-circle text-danger me-2'></i>Bloqueado`;
+          return `${estado}`;
         },
       },
       {
@@ -46,69 +41,6 @@ $(document).ready(function () {
     lengthMenu: [7, 10, 25, 50, 75, 100],
   });
 });
-
-function listRoles() {
-  let ajaxUrl = base_url + "admin/usuarios/roles";
-  $.post(ajaxUrl, function () {})
-    .done(function (data) {
-      if (data.status) {
-        $("#idrol").empty();
-        $("#idrol").append(
-          "<option value='' checked>Seleccione una opción</option>"
-        );
-        $.each(data.data, function (index, value) {
-          $("#idrol").append(
-            "<option value=" + value.id + ">" + value.nombre + "</option>"
-          );
-        });
-      }
-    })
-    .fail(function (jqXHR, textStatus, errorThrown) {
-      Toast.fire({
-        icon: "error",
-        title: "error: " + errorThrown,
-      });
-      console.log(jqXHR, textStatus, errorThrown);
-    })
-    .always(function () {
-      divLoading.css("display", "none");
-    });
-  $("#idrol").select2({
-    width: "100%",
-    placeholder: "Seleccione una opción",
-    dropdownParent: $("#idrol").parent(),
-  });
-}
-
-function listPersonas() {
-  let ajaxUrl = base_url + "admin/usuarios/person";
-  $.post(ajaxUrl, function () {})
-    .done(function (data) {
-      if (data.status) {
-        $("#idpersona").empty();
-        $.each(data.data, function (index, value) {
-          $("#idpersona").append(
-            "<option value=" + value.id + ">" + value.nombre + "</option>"
-          );
-        });
-      }
-    })
-    .fail(function () {
-      Toast.fire({
-        icon: "error",
-        title: "error: " + errorThrown,
-      });
-      console.log(jqXHR, textStatus, errorThrown);
-    })
-    .always(function () {
-      divLoading.css("display", "none");
-    });
-  $("#idpersona").select2({
-    width: "100%",
-    placeholder: "Seleccione una opción",
-    dropdownParent: $("#idpersona").parent(),
-  });
-}
 
 function generateDropdownMenu(row) {
   const editOption = generateDropdownOption(
@@ -148,25 +80,48 @@ function generateDropdownOption(text, iconClass, onClickFunction) {
     `;
   }
 }
-//
+
 $("#btnNuevo").on("click", function () {
   resetForm();
-  $("#modalFormUsuario").modal("show");
+  $("#addModal").modal("show");
 });
 
 $("#btnRecargar").on("click", function () {
   tb.api().ajax.reload();
 });
 
-$("#user_form").submit(function (e) {
+$("#limpiar").on("click", function () {
+  resetForm();
+});
+
+$("#btnEliminarPrevisualizacionImagen").on("click", function () {
+  eliminarImg();
+});
+
+$(".buscar-reniec").on("click", function () {
+  Toast.fire({
+    position: "top",
+    icon: "warning",
+    title: "Para buscar en RENIEC debe contratar el plan premium.",
+  });
+});
+
+$("#person_form").submit(function (e) {
   e.preventDefault();
   divLoading.css("display", "flex");
-  let formData = $("#user_form").serialize();
-  $.post(base_url + "admin/usuarios/save", formData, function () {})
+  // capturar los datos del formulario pero incluyendo el archivo
+  let formData = new FormData(document.getElementById("person_form"));
+  $.ajax({
+    url: base_url + "admin/personas/save",
+    type: "POST",
+    data: formData,
+    processData: false,
+    contentType: false,
+  })
     .done(function (response) {
       if (response.status) {
         tb.api().ajax.reload();
-        // resetForm();
+        resetForm();
       }
       Swal.fire(
         response.status ? "Éxito" : "Error",
@@ -188,38 +143,31 @@ $("#user_form").submit(function (e) {
     });
 });
 
-function resetForm() {
-  $("#user_form").trigger("reset");
-  $(".title-new-modal span").text("Nuevo Usuario");
-  $("#id").val("");
-  listRoles();
-  listPersonas();
-}
-
 function funEditar(id) {
   resetForm();
   divLoading.css("display", "flex");
-  let ajaxUrl = base_url + "admin/usuarios/search";
+  let ajaxUrl = base_url + "admin/personas/search";
   $.post(ajaxUrl, { id }, function () {})
     .done(function (response) {
-      $("#id").val(response.data.idusuario);
+      $("#id").val(response.data.id);
+      $("#dni").val(response.data.dni);
+      $("#name").val(response.data.name);
+      $("#email").val(response.data.email);
+      $("#phone").val(response.data.phone);
+      $("#status").val(response.data.status).trigger("change");
+      $("#address").val(response.data.address);
+      $(".mostrarimagen").attr("src", response.data.foto);
+      $("#addModal").modal("show");
       $(".title-new-modal span").text(
-        "Editar Usuario : " + response.data.usu_usuario
+        "Editar Personal : " + response.data.name
       );
-      $("#user").val(response.data.usu_usuario);
-      $("#status").val(response.data.usu_estado);
-      $("#idrol").val(response.data.idrol).trigger("change");
-      $("#idpersona").val(response.data.idpersona).trigger("change");
-      $("#modalFormUsuario").modal("show");
     })
     .fail(function (jqXHR, textStatus, errorThrown) {
       Toast.fire({
         icon: "error",
         title: "error: " + errorThrown,
       });
-      console.log(jqXHR);
-      console.log(textStatus);
-      console.log(errorThrown);
+      console.log(jqXHR, textStatus, errorThrown);
     })
     .always(function () {
       divLoading.css("display", "none");
@@ -237,7 +185,7 @@ function funEliminar(id) {
   }).then((result) => {
     if (result.isConfirmed) {
       divLoading.css("display", "flex");
-      let ajaxUrl = base_url + "admin/usuarios/delete";
+      let ajaxUrl = base_url + "admin/personas/delete";
       $.post(ajaxUrl, { id }, function () {})
         .done(function (response) {
           if (response.status) {
@@ -254,13 +202,45 @@ function funEliminar(id) {
             icon: "error",
             title: "error: " + errorThrown,
           });
-          console.log(jqXHR);
-          console.log(textStatus);
-          console.log(errorThrown);
+         console.log(jqXHR, textStatus, errorThrown);         
         })
         .always(function () {
           divLoading.css("display", "none");
         });
     }
   });
+}
+
+function resetForm() {
+  $("#person_form").trigger("reset");
+  eliminarImg();
+  $("#btnEliminarPrevisualizacionImagen").val("");
+  $(".title-new-modal span").text("Agregar nueva persona");
+  $("#id").val("");
+  $("#status").select2({
+    width: "100%",
+    placeholder: "Seleccione una opción",
+    dropdownParent: $("#status").parent(),
+  });
+}
+
+function viewImg(ths, event) {
+  let fileSize = $(ths)[0].files[0].size / 1024 / 1024; // Tamaño del archivo en MB
+  if (fileSize > 5) {
+    Toast.fire({
+      icon: "error",
+      title: "El tamaño del archivo no debe superar los 5MB",
+    });
+    $("#photo").val("");
+  } else {
+    let view = $(".mostrarimagen");
+    let file = $(ths)[0].files[0];
+    var tmppath = URL.createObjectURL(event.target.files[0]);
+    view.attr("src", tmppath);
+  }
+}
+
+function eliminarImg() {
+  $("#photo").val("");
+  $(".mostrarimagen").attr("src", base_url + "img/default.png");
 }

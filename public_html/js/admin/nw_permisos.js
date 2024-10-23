@@ -12,10 +12,10 @@ $(document).ready(function () {
       dataSrc: "",
     },
     columns: [
-      { data: "nmr" },
-      { data: "rol" },
-      { data: "menu" },
-      { data: "submenu" },
+      { data: "nmr", width: "5%" },
+      { data: "rol", width: "10%" },
+      { data: "menu", width: "10%" },
+      { data: "submenu", width: "10%" },
       { data: "r" },
       { data: "w" },
       { data: "u" },
@@ -263,4 +263,8 @@ $(document).on("change", "#idmenu", function () {
       });
     }
   });
+});
+
+$("#btnRecargar").on("click", function () {
+  tb.api().ajax.reload();
 });
