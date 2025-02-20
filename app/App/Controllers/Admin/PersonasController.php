@@ -2,27 +2,19 @@
 
 namespace App\Controllers\Admin;
 
-use Slim\Csrf\Guard;
-use Slim\Psr7\Factory\ResponseFactory;
-
 use App\Core\Controller;
-use App\FileHandlers\ImageHandler;
-use App\Helpers\Snowflake;
 use App\Models\TableModel;
+use Exception;
 
 class PersonasController extends Controller
 {
-    protected $permisos;
-    protected $responseFactory;
-    protected $guard;
-
+    private $table = "sis_personal";
+    private $id = "idpersona";
+    private const PERMISSION = "ruta.personal";
 
     public function __construct()
     {
         parent::__construct();
-        $this->permisos = getPermisos($this->className($this));
-        $this->responseFactory = new ResponseFactory();
-        $this->guard = new Guard($this->responseFactory);
     }
 
     public function index($request, $response)
@@ -30,324 +22,338 @@ class PersonasController extends Controller
         return $this->render($response, 'App.Usuarios.Personal', [
             'titulo_web' => 'Personal',
             "url" => $request->getUri()->getPath(),
-            "permisos" => $this->permisos,
+            'permisos' => $this->permisos_extras,
+            "permission" => self::PERMISSION,
             "css" => [
                 "/vendor/select2/select2/dist/css/select2.min.css",
                 "/css/select2-custom.css",
             ],
             "js" => [
                 "/vendor/select2/select2/dist/js/select2.full.min.js",
-                "/js/admin/nw_personal.js"
+                // "/js/admin/nw_personal.js",
+                "/js/chio/personas.js?v=" . time()
             ],
         ]);
     }
 
     public function list($request, $response)
     {
-        $model = new TableModel;
-        $model->setTable("sis_personal");
-        $model->setId("idpersona");
-        $arrData = $model
-            ->select(
-                "idpersona as id",
-                "per_nombre as nombre",
-                "per_email as email",
-                "per_estado as estado"
-            )
-            ->orderBy("per_nombre")
-            ->get();
-        for ($i = 0; $i < count($arrData); $i++) {
-            $arrData[$i]['delete'] = 0;
-            $arrData[$i]['edit'] = 0;
+        try {
+            $data = $this->sanitize($request->getParsedBody());
 
-            if ($this->permisos['perm_d'] == 1) {
-                $arrData[$i]['delete'] = 1;
+            $model = new TableModel();
+            $model->setTable($this->table);
+            $model->setId($this->id);
+
+            $query = $model->select(
+                "idpersona",
+                "per_dni",
+                "per_nombre",
+                "per_celular",
+                "per_email",
+                "per_direcc",
+                "per_foto",
+                "per_estado",
+                "per_fecha"
+            );
+
+            // Filtro por estado
+            if (!empty($data['filtro_estado'])) {
+                $query->where('per_estado', $data['filtro_estado']);
+            } else {
+                $query->where('per_estado', 1);
             }
 
-            if ($this->permisos['perm_u'] == 1) {
-                $arrData[$i]['edit'] = 1;
+            // Búsqueda general
+            if (!empty($data['filtro_search'])) {
+                $search = $data['filtro_search'];
+                $query->where(function ($q) use ($search) {
+                    $q->where('per_dni', 'LIKE', "%$search%")
+                        ->orWhere('per_nombre', 'LIKE', "%$search%")
+                        ->orWhere('per_email', 'LIKE', "%$search%")
+                        ->orWhere('per_celular', 'LIKE', "%$search%");
+                });
             }
+
+            $arrData = $query->orderBy('per_nombre')->get();
+
+            // Verificar si cada persona tiene un usuario asociado
+            foreach ($arrData as &$persona) {
+                $usuarioModel = new TableModel();
+                $usuarioModel->setTable("sis_usuarios");
+                $hasUser = $usuarioModel->where('idpersona', $persona['idpersona'])->first();
+                $persona['tiene_usuario'] = !empty($hasUser);
+            }
+
+            return $this->respondWithJson($response, $arrData);
+        } catch (Exception $e) {
+            return $this->respondWithError($response, $e->getMessage());
         }
-        return $this->respondWithJson($response, $arrData);
     }
 
     public function store($request, $response)
     {
-        if ($this->permisos['perm_w'] !== "1") {
-            return $this->respondWithError($response, "No tiene permisos para realizar esta acción");
-        }
-        $data = $this->sanitize($request->getParsedBody());
-        $data["per_foto"] = $_FILES["photo"];
-        if (isset($data["id"]) && !empty($data["id"])) {
-            return $this->update($request, $response);
-        }
-        $errors = $this->validar($data);
-        if (!$errors) {
-            return $this->respondWithError($response, "Verifique los datos ingresados.");
-        }
-        $model = new TableModel;
-        $model->setTable("sis_personal");
-        $model->setId("idpersona");
-        $existe = $model
-            ->where("per_nombre", "LIKE", $data['name'])
-            ->where("per_dni", $data['dni'])
-            ->where("per_estado", 1)
-            ->first();
-        if (!empty($existe)) {
-            return $this->respondWithError($response, "Ya tiene un usuario registrado con ese nombre.");
-        }
-        $imagen = "/img/default.png";
-        if ($data["per_foto"]["error"] === 0) {
-            try {
-                $imageHandler = new ImageHandler($data["per_foto"]);
-                $responseUpload = $imageHandler
-                    ->setName(urls_amigables($data["name"]))
-                    ->setMinSize(1024) // Mínimo de 1KB
-                    ->setMaxSize(10485760) // Máximo de 10MB
-                    ->setMime(['image/jpeg', 'image/png', 'image/gif'])
-                    ->setStorage('images/personal', 0755) // Carpeta de almacenamiento
-                    ->upload();
+        try {
+            $this->checkPermission(self::PERMISSION, "create");
 
-                if (!$responseUpload) {
-                    return $this->respondWithError($response, $imageHandler->getErrorMessage());
-                }
-                if ($responseUpload) {
-                    $imagen = "/" . $imageHandler->getPath();
-                }
-            } catch (\Throwable $th) {
-                return $this->respondWithError($response, $th->getMessage());
+            $data = $this->sanitize($request->getParsedBody());
+
+            if (!$this->validateData($data)) {
+                return $this->respondWithError($response, "Los campos con (*) son obligatorios");
             }
-        }
 
-        $dataInsert = [
-            "per_dni" => $data["dni"] ?? NULL,
-            "per_nombre" => ucwords($data['name']),
-            "per_celular" => $data['phone'],
-            "per_email" => strtolower($data['email']),
-            "per_direcc" => ucwords($data['address']),
-            "per_estado" => $data['status'] ?? 0,
-            "per_foto" => $imagen,
-        ];
-
-        $rq = $model->create($dataInsert);
-        if (!empty($rq)) {
-            return $this->respondWithSuccess($response, "Datos guardados correctamente");
-        }
-        return $this->respondWithJson($response, "Error al guardar los datos");
-    }
-
-    private function validar($data)
-    {
-        if (empty($data["dni"])) {
-            return false;
-        }
-        if (empty($data["name"])) {
-            return false;
-        }
-        // if (empty($data["email"])) {
-        //     return false;
-        // }
-        // if (empty($data["phone"])) {
-        //     return false;
-        // }
-        // if (empty($data["address"])) {
-        //     return false;
-        // }
-        // if ($data["status"] != 0 && $data["status"] != 1) {
-        //     return false;
-        // }
-        return true;
-    }
-
-    public function search($request, $response)
-    {
-        if ($this->permisos['perm_r'] !== "1") {
-            return $this->respondWithError($response, "No tiene permisos para realizar esta acción");
-        }
-        $data = $this->sanitize($request->getParsedBody());
-        $errors = $this->validarSearch($data);
-        if (!$errors) {
-            $msg = "Verifique los datos ingresados";
-            return $this->respondWithError($response, $msg);
-        }
-
-        $model = new TableModel;
-        $model->setTable("sis_personal");
-        $model->setId("idpersona");
-        $rq = $model
-            ->select(
-                "idpersona as id",
-                "per_dni as dni",
-                "per_nombre as name",
-                "per_celular as phone",
-                "per_email as email",
-                "per_direcc as address",
-                "per_estado as status",
-                "per_foto as foto"
-            )
-            ->find($data['id']);
-        if (!empty($rq)) {
-            // adjuntar imagen de sis_imagen
-            // $objImg = new TableModel;
-            // $objImg->setTable("sis_imagenes");
-            // $objImg->setId("idimagen");
-            // $img = $objImg->where("img_propietario", $rq['idpersona'])->where("img_type", "USER::AVATAR")->first();
-            // if (!empty($img)) {
-            //     $rq = array_merge($rq, $img);
-            // }
-            $rq["foto"] = !empty($rq["foto"]) ? $rq["foto"] : "/img/default.png";
-            return $this->respondWithJson($response, ["status" => true, "data" => $rq]);
-        }
-        $msg = "No se encontraron datos";
-        return $this->respondWithError($response, $msg);
-    }
-
-    public function validarSearch($data)
-    {
-        if (empty($data["id"])) {
-            return false;
-        }
-        return true;
-    }
-
-    public function update($request, $response)
-    {
-        if ($this->permisos['perm_u'] !== "1") {
-            return $this->respondWithError($response, "No tiene permisos para realizar esta acción");
-        }
-        $data = $this->sanitize($request->getParsedBody());
-        $data["per_foto"] = $_FILES["photo"];
-        $errors = $this->validarUpdate($data);
-        if (!$errors) {
-            $msg = "Verifique los datos ingresados";
-            return $this->respondWithError($response, $msg);
-        }
-        $model = new TableModel;
-        $model->setTable("sis_personal");
-        $model->setId("idpersona");
-        $existe = $model
-            ->where("idpersona", "!=", $data['id'])
-            ->where("per_nombre", "LIKE", $data['name'])
-            ->where("per_dni", $data['dni'])
-            ->where("per_estado", 1)
-            ->first();
-        if (!empty($existe)) {
-            return $this->respondWithError($response, "Ya tiene un usuario registrado con ese nombre.");
-        }
-        $imagen = "";
-        if ($data["per_foto"]["error"] === 0) {
-            try {
-                $imageHandler = new ImageHandler($data["per_foto"]);
-                $responseUpload = $imageHandler
-                    ->setName(urls_amigables($data["name"]))
-                    ->setMinSize(1024) // Mínimo de 1KB
-                    ->setMaxSize(10485760) // Máximo de 10MB
-                    ->setMime(['image/jpeg', 'image/png', 'image/gif'])
-                    ->setStorage('images/personal', 0755) // Carpeta de almacenamiento
-                    ->upload();
-
-                if (!$responseUpload) {
-                    return $this->respondWithError($response, $imageHandler->getErrorMessage());
-                }
-                if ($responseUpload) {
-                    $imagen = "/" . $imageHandler->getPath();
-                }
-            } catch (\Throwable $th) {
-                return $this->respondWithError($response, $th->getMessage());
+            if (!$this->validateDNI($data['dni'])) {
+                return $this->respondWithError($response, "El DNI debe tener 8 dígitos");
             }
-        }
-        $dataUpdate = [
-            "per_dni" => $data["dni"] ?? '0',
-            "per_nombre" => ucwords($data['name']),
-            "per_celular" => $data['phone'] ?? '0',
-            "per_email" => strtolower($data['email']),
-            "per_direcc" => ucwords($data['address']),
-        ];
-        if ($imagen) {
-            $dataUpdate["per_foto"] = $imagen;
-        }
-        $rq = $model->update($data['id'], $dataUpdate);
-        if (!empty($rq)) {
-            // $image = new ImageClass;
-            // $img = ['text' => ''];
-            // if ($image->verificar($_FILES['photo'])) {
-            //     $img = $image->cargarImagenUsuario($_FILES['photo'], $rq, "img/person");
-            // }
-            // return $this->respondWithSuccess($response, "Datos actualizados correctamente");
-            return $this->respondWithJson($response, [
-                "status" => true,
-                "msg" => "Datos actualizados correctamente",
-                "data" => $data
+
+            if (!empty($data['celular']) && !$this->validateCelular($data['celular'])) {
+                return $this->respondWithError($response, "El celular debe tener 9 dígitos");
+            }
+
+            if (!empty($data['email']) && !$this->validateEmail($data['email'])) {
+                return $this->respondWithError($response, "El email no es válido");
+            }
+
+            $model = new TableModel();
+            $model->setTable($this->table);
+            $model->setId($this->id);
+
+            // Verificar DNI duplicado
+            $existingPersonal = $model->where('per_dni', $data['dni'])->first();
+            if ($existingPersonal) {
+                return $this->respondWithError($response, "El DNI ya se encuentra registrado");
+            }
+
+            // Procesamiento de la foto si existe
+            $fotoPath = null;
+            if (isset($_FILES['foto']) && $_FILES['foto']['error'] === UPLOAD_ERR_OK) {
+                $fotoPath = $this->procesarFoto($_FILES['foto']);
+                if (!$fotoPath) {
+                    return $this->respondWithError($response, "Error al procesar la foto");
+                }
+            }
+
+            $rq = $model->create([
+                "per_dni" => $data["dni"],
+                "per_nombre" => trim($data["nombre"]),
+                "per_celular" => $data["celular"] ?: "0",
+                "per_email" => $data["email"] ?? null,
+                "per_direcc" => $data["direccion"] ?? null,
+                "per_foto" => $fotoPath,
+                "per_estado" => "1"
             ]);
+
+            return $rq
+                ? $this->respondWithSuccess($response, "Personal registrado correctamente")
+                : $this->respondWithError($response, "Error al registrar el personal");
+        } catch (Exception $e) {
+            return $this->respondWithError($response, $e->getMessage());
         }
-        $msg = "Error al guardar los datos";
-        return $this->respondWithJson($response, $existe);
     }
 
-    private function validarUpdate($data)
+    private function procesarFoto($foto)
     {
-        if (empty($data["id"])) {
+        try {
+            $nombreArchivo = uniqid() . '_' . $foto['name'];
+            $rutaDestino = 'uploads/personal/' . $nombreArchivo;
+
+            if (!move_uploaded_file($foto['tmp_name'], $rutaDestino)) {
+                return false;
+            }
+
+            return $nombreArchivo;
+        } catch (Exception $e) {
             return false;
         }
-        if (empty($data["dni"])) {
-            return false;
-        }
-        if (empty($data["name"])) {
-            return false;
-        }
-        // if (empty($data["email"])) {
-        //     return false;
-        // }
-        // if (empty($data["phone"])) {
-        //     return false;
-        // }
-        // if (empty($data["address"])) {
-        //     return false;
-        // }
-        if ($data["status"] != 0 && $data["status"] != 1) {
-            return false;
-        }
-        return true;
     }
 
-    public function delete($request, $response)
+    public function search($request, $response, $args)
     {
-        if ($this->permisos['perm_d'] !== "1") {
-            return $this->respondWithError($response, "No tiene permisos para realizar esta acción");
-        }
-        $data = $this->sanitize($request->getParsedBody());
-        if (empty($data["id"])) {
-            return $this->respondWithError($response, "Error de validación, por favor recargue la página");
-        }
-        $model = new TableModel;
-        $model->setTable("sis_personal");
-        $model->setId("idpersona");
-        $rq = $model->find($data["id"]);
-        if (!empty($rq)) {
-            $rq = $model
-                ->query("SELECT * FROM `sis_usuarios` WHERE `idpersona` = {$data["id"]}")
+        try {
+            $this->checkPermission(self::PERMISSION, "update");
+
+            $id = $args['id'];
+            $model = new TableModel();
+            $model->setTable($this->table);
+            $model->setId($this->id);
+
+            $personal = $model
+                ->select(
+                    "idpersona",
+                    "per_dni as dni",
+                    "per_nombre as nombre",
+                    "per_celular as celular",
+                    "per_email as email",
+                    "per_direcc as direccion",
+                    "per_foto as foto",
+                    "per_estado as estado"
+                )
+                ->where("idpersona", $id)
                 ->first();
 
-            if (!empty($rq)) {
-                $msg = "No se puede eliminar el registro, ya que tiene usuarios asociados.";
-                return $this->respondWithError($response, $msg);
+            if (!$personal) {
+                return $this->respondWithError($response, "Personal no encontrado");
             }
 
-            if ($_SESSION["app_r"] === 1) {
-                $rq = $model->delete($data["id"]);
-            } else {
-                $rq = $model->update(
-                    $data["id"],
-                    [
-                        "per_estado" => 0
-                    ]
-                );
-            }
-            if (!empty($rq)) {
-                return $this->respondWithSuccess($response, "Por seguridad, el registro ha sido desactivado");
-            }
-            return $this->respondWithError($response, "Error al eliminar los datos");
+            // Verificar si tiene usuario asociado
+            $usuarioModel = new TableModel();
+            $usuarioModel->setTable("sis_usuarios");
+            $hasUser = $usuarioModel->where('idpersona', $id)->first();
+            $personal['tiene_usuario'] = !empty($hasUser);
+
+            return $this->respondWithJson($response, [
+                "success" => true,
+                "personal" => $personal
+            ]);
+        } catch (Exception $e) {
+            return $this->respondWithError($response, $e->getMessage());
         }
-        return $this->respondWithError($response, "No se encontraron datos");
+    }
+
+    public function update($request, $response, $args)
+    {
+        try {
+            $this->checkPermission(self::PERMISSION, "update");
+
+            $id = $args['id'];
+            $data = $this->sanitize($request->getParsedBody());
+
+            if (!$this->validateData($data)) {
+                return $this->respondWithError($response, "Los campos con (*) son obligatorios");
+            }
+
+            if (!$this->validateDNI($data['dni'])) {
+                return $this->respondWithError($response, "El DNI debe tener 8 dígitos");
+            }
+
+            if (!empty($data['celular']) && !$this->validateCelular($data['celular'])) {
+                return $this->respondWithError($response, "El celular debe tener 9 dígitos");
+            }
+
+            if (!empty($data['email']) && !$this->validateEmail($data['email'])) {
+                return $this->respondWithError($response, "El email no es válido");
+            }
+
+            $model = new TableModel();
+            $model->setTable($this->table);
+            $model->setId($this->id);
+
+            // Verificar DNI duplicado excluyendo el registro actual
+            $existingPersonal = $model->where('per_dni', $data['dni'])
+                ->where('idpersona', '!=', $id)
+                ->first();
+            if ($existingPersonal) {
+                return $this->respondWithError($response, "El DNI ya se encuentra registrado en otro personal");
+            }
+
+            // Obtener datos actuales para la foto
+            $currentData = $model->find($id);
+            $fotoPath = $currentData['per_foto'];
+
+            // Procesar nueva foto si se subió una
+            if (isset($_FILES['foto']) && $_FILES['foto']['error'] === UPLOAD_ERR_OK) {
+                $newFotoPath = $this->procesarFoto($_FILES['foto']);
+                if (!$newFotoPath) {
+                    return $this->respondWithError($response, "Error al procesar la nueva foto");
+                }
+
+                // Eliminar foto anterior si existe
+                if ($fotoPath && file_exists('uploads/personal/' . $fotoPath)) {
+                    unlink('uploads/personal/' . $fotoPath);
+                }
+
+                $fotoPath = $newFotoPath;
+            }
+
+            $updateData = [
+                "per_dni" => $data["dni"],
+                "per_nombre" => trim($data["nombre"]),
+                "per_celular" => $data["celular"] ?? "0",
+                "per_email" => $data["email"] ?? null,
+                "per_direcc" => $data["direccion"] ?? null,
+            ];
+
+            // Solo actualizar la foto si hay una nueva
+            if ($fotoPath) {
+                $updateData["per_foto"] = $fotoPath;
+            }
+
+            $rq = $model->update($id, $updateData);
+
+            return $rq
+                ? $this->respondWithSuccess($response, "Personal actualizado correctamente")
+                : $this->respondWithError($response, "Error al actualizar el personal");
+        } catch (Exception $e) {
+            return $this->respondWithError($response, $e->getMessage());
+        }
+    }
+
+    public function delete($request, $response, $args)
+    {
+        try {
+            $this->checkPermission(self::PERMISSION, "delete");
+
+            $id = $args['id'];
+            $model = new TableModel();
+            $model->setTable($this->table);
+            $model->setId($this->id);
+
+            // Verificar si tiene usuario asociado
+            $usuarioModel = new TableModel();
+            $usuarioModel->setTable("sis_usuarios");
+            $hasUser = $usuarioModel->where('idpersona', $id)->first();
+
+            if ($hasUser) {
+                return $this->respondWithError($response, "No se puede eliminar el personal porque tiene un usuario asociado");
+            }
+
+            $personal = $model->find($id);
+            if (!$personal) {
+                return $this->respondWithError($response, "Personal no encontrado");
+            }
+
+            // Eliminar foto si existe
+            if ($personal['per_foto'] && file_exists('uploads/personal/' . $personal['per_foto'])) {
+                unlink('uploads/personal/' . $personal['per_foto']);
+            }
+
+            $rq = $model->update($id, [
+                "per_estado" => 0
+            ]);
+
+            return $rq
+                ? $this->respondWithSuccess($response, "Personal eliminado correctamente")
+                : $this->respondWithError($response, "Error al eliminar el personal");
+        } catch (Exception $e) {
+            return $this->respondWithError($response, $e->getMessage());
+        }
+    }
+
+    private function validateData($data)
+    {
+        $required = [
+            'dni',
+            'nombre'
+        ];
+
+        foreach ($required as $field) {
+            if (empty($data[$field])) return false;
+        }
+        return true;
+    }
+
+    private function validateDNI($dni)
+    {
+        return preg_match('/^[0-9]{8}$/', $dni);
+    }
+
+    private function validateCelular($celular)
+    {
+        return preg_match('/^9[0-9]{8}$/', $celular);
+    }
+
+    private function validateEmail($email)
+    {
+        return filter_var($email, FILTER_VALIDATE_EMAIL);
     }
 }

@@ -3,6 +3,7 @@
 namespace App\Controllers\Login;
 
 use App\Core\Controller;
+use App\Models\TableModel;
 
 class LogoutController extends Controller
 {
@@ -17,8 +18,18 @@ class LogoutController extends Controller
 
     public function admin($request, $response, $args)
     {
-        // session_unset();
-        // session_destroy();
+        $model = new TableModel();
+        $model->setTable("sis_sesiones");
+        $model->setId("idsesion");
+        $existe = $model->select("idsesion")
+            ->where("session_token", $_SESSION['app_session'])
+            ->first();
+        if ($existe) {
+            $model->update(
+                $existe["idsesion"],
+                ["activo" => "0"]
+            );
+        }
 
         unset($_SESSION['app_id']);
         unset($_SESSION['app_r']);

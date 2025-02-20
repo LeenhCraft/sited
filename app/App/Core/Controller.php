@@ -2,14 +2,18 @@
 
 namespace App\Core;
 
+use Exception;
+
 class Controller
 {
+    protected $permisos_extras = [];
 
     public function __construct()
     {
         if (session_status() == PHP_SESSION_NONE) {
             session_start();
         }
+        $this->permisos_extras = getPermisosExtras();
         centinela();
     }
 
@@ -95,5 +99,15 @@ class Controller
         $cadena = get_class($cadena);
         $class = explode('\\', $cadena);
         return end($class);
+    }
+
+    protected function checkPermission($permission, $action)
+    {
+        if (
+            !isset($this->permisos_extras[$permission][$action]) ||
+            $this->permisos_extras[$permission][$action] != "1"
+        ) {
+            throw new Exception("No tienes permisos para realizar esta acción");
+        }
     }
 }

@@ -4,287 +4,375 @@ namespace App\Controllers\Admin;
 
 use App\Core\Controller;
 use App\Models\TableModel;
-use Slim\Csrf\Guard;
-use Slim\Psr7\Factory\ResponseFactory;
+use Exception;
 
 class UsuariosController extends Controller
 {
-    protected $permisos;
-    protected $responseFactory;
-    protected $guard;
+    private $table = "sis_usuarios";
+    private $id = "idusuario";
+    private const PERMISSION = "ruta.usuarios";
 
     public function __construct()
     {
         parent::__construct();
-        $this->permisos = getPermisos($this->className($this));
-        $this->responseFactory = new ResponseFactory();
-        $this->guard = new Guard($this->responseFactory);
     }
 
     public function index($request, $response)
     {
-        return $this->render($response, 'App.Usuarios.usuarios', [
+        // Obtener roles para el select
+        $modelRol = new TableModel();
+        $modelRol->setTable("sis_rol");
+        $modelRol->setId("idrol");
+
+        $roles = $modelRol->where('rol_estado', 1)->get();
+
+        return $this->render($response, 'App.Usuarios.Usuarios', [
             'titulo_web' => 'Usuarios',
             "url" => $request->getUri()->getPath(),
-            "permisos" => $this->permisos,
+            "permisos" => $this->permisos_extras,
+            "permission" => self::PERMISSION,
+            'roles' => $roles,
             "css" => [
                 "/vendor/select2/select2/dist/css/select2.min.css",
                 "/css/select2-custom.css",
             ],
             "js" => [
                 "/vendor/select2/select2/dist/js/select2.full.min.js",
-                "/js/admin/nw_usu.js"
+                // "/js/admin/nw_usu.js",
+                "/js/chio/usuarios.js?v=" . time()
             ],
         ]);
     }
 
     public function list($request, $response)
     {
-        if ($this->permisos['perm_r'] !== "1") {
-            return $this->respondWithError($response, "No tiene permisos para realizar esta acción");
-        }
-        $model = new TableModel;
-        $model->setTable("sis_usuarios");
-        $model->setId("idusuario");
-        $arrData = $model
-            ->select(
-                "sis_usuarios.idusuario as id",
-                "sis_usuarios.usu_usuario as user",
-                "sis_rol.rol_nombre as rol",
-                "sis_usuarios.usu_activo as activo",
-                "sis_usuarios.usu_estado as estado",
+        try {
+            $data = $this->sanitize($request->getParsedBody());
+
+            $model = new TableModel();
+            $this->table = "sis_usuarios u";
+            $model->setTable($this->table);
+            $model->setId($this->id);
+
+            $query = $model->select(
+                "u.idusuario",
+                "u.usu_usuario",
+                "u.usu_activo",
+                "u.usu_estado",
+                "u.usu_primera",
+                "u.usu_twoauth",
+                "u.usu_fecha",
+                "p.per_nombre",
+                "p.per_dni",
+                "p.per_foto",
+                "r.rol_nombre"
             )
-            ->join("sis_rol", "sis_usuarios.idrol", "sis_rol.idrol")
-            ->get();
+                ->join("sis_personal p", "u.idpersona", "=", "p.idpersona")
+                ->join("sis_rol r", "u.idrol", "=", "r.idrol");
 
-        for ($i = 0; $i < count($arrData); $i++) {
-            $arrData[$i]['delete'] = 0;
-            $arrData[$i]['edit'] = 0;
-
-            if ($this->permisos['perm_d'] == 1) {
-                $arrData[$i]['delete'] = 1;
+            // Filtro por estado
+            if (isset($data['filtro_estado'])) {
+                $query->where('u.usu_estado', $data['filtro_estado']);
+            } else {
+                $query->where('u.usu_estado', 1);
             }
 
-            if ($this->permisos['perm_u'] == 1) {
-                $arrData[$i]['edit'] = 1;
+            // Filtro por rol
+            if (!empty($data['filtro_rol'])) {
+                $query->where('u.idrol', $data['filtro_rol']);
             }
+
+            // Búsqueda general
+            if (!empty($data['filtro_search'])) {
+                $search = $data['filtro_search'];
+                $query->where(function ($q) use ($search) {
+                    $q->where('u.usu_usuario', 'LIKE', "%$search%")
+                        ->orWhere('p.per_nombre', 'LIKE', "%$search%")
+                        ->orWhere('p.per_dni', 'LIKE', "%$search%")
+                        ->orWhere('r.rol_nombre', 'LIKE', "%$search%");
+                });
+            }
+
+            $arrData = $query->orderBy('p.per_nombre')->get();
+            // dep($model->previewSql(), 1);
+
+            return $this->respondWithJson($response, $arrData);
+        } catch (Exception $e) {
+            return $this->respondWithError($response, $e->getMessage());
         }
-        return $this->respondWithJson($response, $arrData);
+    }
+
+    public function getPersonalSinUsuario($request, $response)
+    {
+        try {
+            $model = new TableModel();
+            $model->setTable("sis_personal");
+            $model->setId("idpersona");
+
+            // Consulta SQL para obtener personal sin usuario
+            $sql = "SELECT p.idpersona, p.per_dni, p.per_nombre 
+                    FROM sis_personal p 
+                    WHERE p.per_estado = 1 
+                    AND p.idpersona NOT IN (
+                        SELECT idpersona 
+                        FROM sis_usuarios 
+                        WHERE usu_estado = 1
+                    )
+                    ORDER BY p.per_nombre";
+
+            $personal = $model->query($sql)->get();
+
+            return $this->respondWithJson($response, [
+                "success" => true,
+                "personal" => $personal
+            ]);
+        } catch (Exception $e) {
+            return $this->respondWithError($response, $e->getMessage());
+        }
     }
 
     public function store($request, $response)
     {
-        if ($this->permisos['perm_w'] !== "1") {
-            return $this->respondWithError($response, "No tiene permisos para realizar esta acción");
-        }
-        $data = $this->sanitize($request->getParsedBody());
-        if (isset($data["id"]) && !empty($data["id"])) {
-            return $this->update($request, $response);
-        }
-        // return $this->respondWithJson($response, $data);
-        $errors = $this->validar($data);
-        if (!$errors) {
-            $msg = "Verifique los datos ingresados";
-            return $this->respondWithError($response, $msg);
-        }
+        try {
+            $this->checkPermission(self::PERMISSION, "create");
 
-        $model = new TableModel;
-        $model->setTable("sis_usuarios");
-        $model->setId("idusuario");
-        $existe = $model
-            ->where("usu_usuario", "LIKE", $data['user'])
-            ->first();
-        if (!empty($existe)) {
-            $msg = "Existe un usuario con el mismo nombre";
-            return $this->respondWithError($response, $msg);
-        }
+            $data = $this->sanitize($request->getParsedBody());
 
-        $rq = $model->create([
-            "idrol" => $data["idrol"],
-            "idpersona" => ucwords($data['idpersona']),
-            "usu_usuario" => $data['user'],
-            "usu_pass" => password_hash($data['password'], PASSWORD_DEFAULT),
-            "usu_activo" => $data['status'] ?: 0,
-            "usu_primera" => 0,
-            "usu_twoauth" => 0,
-            "usu_code_twoauth" => 0,
-            "usu_estado" => 1,
-        ]);
-        if (!empty($rq)) {
-            $msg = "Datos guardados correctamente";
-            return $this->respondWithSuccess($response, $msg);
-        }
-        $msg = "Error al guardar los datos";
-        return $this->respondWithJson($response, $existe);
-    }
-
-    private function validar($data)
-    {
-        if (empty($data["idpersona"])) {
-            return false;
-        }
-        if (empty($data["user"])) {
-            return false;
-        }
-        if (empty($data["password"])) {
-            return false;
-        }
-        if (empty($data["idrol"])) {
-            return false;
-        }
-        if ($data["status"] != 0 && $data["status"] != 1) {
-            return false;
-        }
-        return true;
-    }
-
-    public function search($request, $response)
-    {
-        if ($this->permisos['perm_r'] !== "1") {
-            return $this->respondWithError($response, "No tiene permisos para realizar esta acción");
-        }
-        $data = $this->sanitize($request->getParsedBody());
-        $errors = $this->validarSearch($data);
-        if (!$errors) {
-            $msg = "Verifique los datos ingresados";
-            return $this->respondWithError($response, $msg);
-        }
-
-        $model = new TableModel;
-        $model->setTable("sis_usuarios");
-        $model->setId("idusuario");
-        $rq = $model
-            ->select(
-                "sis_usuarios.idusuario",
-                "sis_usuarios.idpersona",
-                "sis_usuarios.usu_usuario",
-                "sis_usuarios.usu_estado",
-                "sis_usuarios.idrol",
-            )
-            ->find($data['id']);
-        if (!empty($rq)) {
-            return $this->respondWithJson($response, ["status" => true, "data" => $rq]);
-        }
-        $msg = "No se encontraron datos";
-        return $this->respondWithError($response, $msg);
-    }
-
-    public function validarSearch($data)
-    {
-        if (empty($data["id"])) {
-            return false;
-        }
-        return true;
-    }
-
-    public function update($request, $response)
-    {
-        if ($this->permisos['perm_u'] !== "1") {
-            return $this->respondWithError($response, "No tiene permisos para realizar esta acción");
-        }
-        $data = $this->sanitize($request->getParsedBody());
-        $errors = $this->validarUpdate($data);
-        if (!$errors) {
-            $msg = "Verifique los datos ingresados";
-            return $this->respondWithError($response, $msg);
-        }
-        $model = new TableModel;
-        $model->setTable("sis_usuarios");
-        $model->setId("idusuario");
-        $existe = $model
-            ->where("usu_usuario", "LIKE", $data['user'])
-            ->where("idusuario", "!=", $data['id'])
-            ->first();
-        if (!empty($existe)) {
-            return $this->respondWithError($response, "Ya tiene un usuario registrado con ese nombre");
-        }
-        $columns = [
-            "idrol" => $data["idrol"],
-            "idpersona" => intval($data['idpersona']),
-            "usu_usuario" => $data['user'],
-            "usu_estado" => $data['status'] ?? 0,
-            "usu_activo" => 1,
-        ];
-
-        if (!empty($data['password'])) {
-            $columns['usu_pass'] = password_hash($data['password'], PASSWORD_DEFAULT);
-        }
-
-        $rq = $model->update($data['id'], $columns);
-        if (!empty($rq)) {
-            return $this->respondWithSuccess($response, "Datos actualizados");
-        }
-        return $this->respondWithJson($response, "Error al guardar los datos");
-    }
-
-    private function validarUpdate($data)
-    {
-        if (empty($data["id"])) {
-            return false;
-        }
-        if (empty($data["idpersona"])) {
-            return false;
-        }
-        if (empty($data["user"])) {
-            return false;
-        }
-        if (empty($data["idrol"])) {
-            return false;
-        }
-        if ($data["status"] != 0 && $data["status"] != 1) {
-            return false;
-        }
-        return true;
-    }
-
-    public function delete($request, $response)
-    {
-        if ($this->permisos['perm_d'] !== "1") {
-            return $this->respondWithError($response, "No tiene permisos para realizar esta acción");
-        }
-        $data = $this->sanitize($request->getParsedBody());
-        if (isset($data["id"]) && empty($data["id"])) {
-            return $this->respondWithError($response, "Error de validación, por favor recargue la página");
-        }
-        $model = new TableModel;
-        $model->setTable("sis_usuarios");
-        $model->setId("idusuario");
-        $rq = $model->find($data["id"]);
-        if (!empty($rq)) {
-            $rq = $model->delete($data["id"]);
-            if (!empty($rq)) {
-                return $this->respondWithSuccess($response, "Datos eliminados correctamente.");
+            if (!$this->validateData($data)) {
+                return $this->respondWithError($response, "Los campos con (*) son obligatorios");
             }
-            return $this->respondWithError($response, "Error al eliminar los datos.");
+
+            $model = new TableModel();
+            $model->setTable($this->table);
+            $model->setId($this->id);
+
+            // Verificar username duplicado
+            $existingUser = $model->where('usu_usuario', $data['usuario'])->first();
+            if ($existingUser) {
+                return $this->respondWithError($response, "El nombre de usuario ya está en uso");
+            }
+
+            // Verificar que la persona y el rol existan y estén activos
+            if (!$this->validatePersonaRol($data['idpersona'], $data['idrol'])) {
+                return $this->respondWithError($response, "La persona o el rol seleccionado no son válidos");
+            }
+
+            // Generar hash de la contraseña
+            $password = $this->generatePassword();
+            $passwordHash = password_hash($password, PASSWORD_DEFAULT);
+
+            $rq = $model->create([
+                "idrol" => $data["idrol"],
+                "idpersona" => $data["idpersona"],
+                "usu_usuario" => strtolower(trim($data["usuario"])),
+                "usu_pass" => $passwordHash,
+                "usu_activo" => 1,
+                "usu_estado" => 1,
+                "usu_primera" => 1, // Primera vez que ingresa
+                "usu_twoauth" => 0,
+                "usu_code_twoauth" => ''
+            ]);
+
+            if ($rq) {
+                return $this->respondWithJson($response, [
+                    "status" => true,
+                    "message" => "Usuario registrado correctamente",
+                    "password" => $password // Enviar la contraseña temporal
+                ]);
+            }
+
+            return $this->respondWithError($response, "Error al registrar el usuario");
+        } catch (Exception $e) {
+            return $this->respondWithError($response, $e->getMessage());
         }
-        return $this->respondWithError($response, "No se encontraron datos para eliminar.");
     }
 
-    public function roles($request, $response)
+    public function search($request, $response, $args)
     {
-        $model = new TableModel;
-        return $this->respondWithJson(
-            $response,
-            [
-                "status" => true,
-                "data" => $model
-                    ->query("SELECT idrol as id, rol_nombre as nombre FROM sis_rol ORDER BY idrol DESC")
-                    ->get()
-            ]
-        );
+        try {
+            $this->checkPermission(self::PERMISSION, "update");
+
+            $id = $args['id'];
+            $model = new TableModel();
+            $model->setTable($this->table);
+            $model->setId($this->id);
+
+            $usuario = $model
+                ->select(
+                    "u.idusuario",
+                    "u.idrol",
+                    "u.idpersona",
+                    "u.usu_usuario as usuario",
+                    "u.usu_activo as activo",
+                    "u.usu_twoauth as twoauth",
+                    "p.per_nombre",
+                    "p.per_dni",
+                    "r.rol_nombre"
+                )
+                ->join("sis_personal p", "u.idpersona", "=", "p.idpersona")
+                ->join("sis_rol r", "u.idrol", "=", "r.idrol")
+                ->where("u.idusuario", $id)
+                ->first();
+
+            if (!$usuario) {
+                return $this->respondWithError($response, "Usuario no encontrado");
+            }
+
+            return $this->respondWithJson($response, [
+                "success" => true,
+                "usuario" => $usuario
+            ]);
+        } catch (Exception $e) {
+            return $this->respondWithError($response, $e->getMessage());
+        }
     }
 
-    public function person($request, $response)
+    public function update($request, $response, $args)
     {
-        $model = new TableModel;
-        return $this->respondWithJson(
-            $response,
-            [
-                "status" => true,
-                "data" => $model
-                    ->query("SELECT idpersona as id, per_nombre as nombre FROM sis_personal WHERE per_estado = 1")
-                    ->get()
-            ]
-        );
+        try {
+            $this->checkPermission(self::PERMISSION, "update");
+
+            $id = $args['id'];
+            $data = $this->sanitize($request->getParsedBody());
+
+            if (!$this->validateData($data, false)) {
+                return $this->respondWithError($response, "Los campos con (*) son obligatorios");
+            }
+
+            $model = new TableModel();
+            $model->setTable($this->table);
+            $model->setId($this->id);
+
+            // Verificar username duplicado
+            $existingUser = $model->where('usu_usuario', $data['usuario'])
+                ->where('idusuario', '!=', $id)
+                ->first();
+            if ($existingUser) {
+                return $this->respondWithError($response, "El nombre de usuario ya está en uso");
+            }
+
+            // Verificar que el rol exista y esté activo
+            if (!$this->validateRol($data['idrol'])) {
+                return $this->respondWithError($response, "El rol seleccionado no es válido");
+            }
+
+            $updateData = [
+                "idrol" => $data["idrol"],
+                "usu_usuario" => strtolower(trim($data["usuario"])),
+                "usu_activo" => $data["activo"],
+                "usu_twoauth" => $data["twoauth"] ?? 0
+            ];
+
+            // Si se solicita reset de contraseña
+            if (!empty($data['reset_password'])) {
+                $password = $this->generatePassword();
+                $updateData["usu_pass"] = password_hash($password, PASSWORD_DEFAULT);
+                $updateData["usu_primera"] = 1;
+            }
+
+            $rq = $model->update($id, $updateData);
+
+            if ($rq) {
+                $response = [
+                    "status" => true,
+                    "message" => "Usuario actualizado correctamente"
+                ];
+
+                if (isset($password)) {
+                    $response["password"] = $password;
+                }
+
+                return $this->respondWithJson($response, $response);
+            }
+
+            return $this->respondWithError($response, "Error al actualizar el usuario");
+        } catch (Exception $e) {
+            return $this->respondWithError($response, $e->getMessage());
+        }
+    }
+
+    public function delete($request, $response, $args)
+    {
+        try {
+            $this->checkPermission(self::PERMISSION, "delete");
+
+            $id = $args['id'];
+            $model = new TableModel();
+            $model->setTable($this->table);
+            $model->setId($this->id);
+
+            // No permitir eliminar el propio usuario
+            if ($id == $_SESSION["app_id"]) {
+                return $this->respondWithError($response, "No puede eliminar su propio usuario");
+            }
+
+            $rq = $model->update($id, [
+                "usu_estado" => 0,
+                "usu_activo" => 0
+            ]);
+
+            return $rq
+                ? $this->respondWithSuccess($response, "Usuario eliminado correctamente")
+                : $this->respondWithError($response, "Error al eliminar el usuario");
+        } catch (Exception $e) {
+            return $this->respondWithError($response, $e->getMessage());
+        }
+    }
+
+    private function validateData($data, $isNew = true)
+    {
+        $required = ['idrol', 'usuario'];
+        if ($isNew) {
+            $required[] = 'idpersona';
+        }
+
+        foreach ($required as $field) {
+            if (empty($data[$field])) return false;
+        }
+        return true;
+    }
+
+    private function validatePersonaRol($idpersona, $idrol)
+    {
+        try {
+            // Verificar persona
+            $modelPersona = new TableModel();
+            $modelPersona->setTable("sis_personal");
+            $persona = $modelPersona->where('idpersona', $idpersona)
+                ->where('per_estado', 1)
+                ->first();
+
+            if (!$persona) return false;
+
+            // Verificar rol
+            return $this->validateRol($idrol);
+        } catch (Exception $e) {
+            return false;
+        }
+    }
+
+    private function validateRol($idrol)
+    {
+        try {
+            $modelRol = new TableModel();
+            $modelRol->setTable("sis_rol");
+            $rol = $modelRol->where('idrol', $idrol)
+                ->where('rol_estado', 1)
+                ->first();
+
+            return !empty($rol);
+        } catch (Exception $e) {
+            return false;
+        }
+    }
+
+    private function generatePassword($length = 8)
+    {
+        $chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+        $password = '';
+        for ($i = 0; $i < $length; $i++) {
+            $password .= $chars[rand(0, strlen($chars) - 1)];
+        }
+        return $password;
     }
 }

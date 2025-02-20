@@ -1,22 +1,29 @@
 <?php
 
 // use Slim\App;
+
+use App\Controllers\Admin\BuscarDocController;
 use Slim\Routing\RouteCollectorProxy;
 
 // Controllers
 use App\Controllers\Admin\DashboardController;
 use App\Controllers\Admin\MenusController;
 use App\Controllers\Admin\PermisosController;
+use App\Controllers\Admin\PermisosEspecialesController;
 use App\Controllers\Admin\PersonasController;
 use App\Controllers\Admin\RolesController;
 use App\Controllers\Admin\SubMenusController;
 use App\Controllers\Admin\UsuariosController;
+use App\Controllers\Chio\EspecialidadController;
+use App\Controllers\Chio\PacientesController;
+use App\Controllers\Chio\PersonalController;
 use App\Controllers\Login\LoginController;
 use App\Controllers\Login\LogoutController;
 
 // Middlewares
 use App\Middleware\AdminMiddleware;
 use App\Middleware\LoginAdminMiddleware;
+use App\Middleware\PermisosExtrasMiddleware;
 use App\Middleware\PermissionMiddleware;
 
 $app->group('/admin/login', function (RouteCollectorProxy $group) {
@@ -58,35 +65,93 @@ $app->group('/admin', function (RouteCollectorProxy $group) {
         $group->post('/submenus', PermisosController::class . ':submenus');
     })->add(PermissionMiddleware::class);
 
+    $group->group('/permisos-especiales', function (RouteCollectorProxy $group) {
+        $group->get('', PermisosEspecialesController::class . ':index');
+        $group->get('/getroles', PermisosEspecialesController::class . ':getRoles');
+        $group->get('/getpermisosporrol/{id}', PermisosEspecialesController::class . ':getPermisosPorRol');
+
+        $group->post('/getrecursos', PermisosEspecialesController::class . ':getRecursos');
+        $group->get('/getrecursos', PermisosEspecialesController::class . ':getRecursos');
+        $group->get('/recurso/{id}', PermisosEspecialesController::class . ':searchRecurso');
+        $group->post('/saverecurso', PermisosEspecialesController::class . ':storeRecurso');
+        $group->post('/deleterecurso', PermisosEspecialesController::class . ':deleteRecurso');
+
+        $group->post('/getacciones', PermisosEspecialesController::class . ':getAcciones');
+        $group->get('/getacciones', PermisosEspecialesController::class . ':getAcciones');
+        $group->get('/accion/{id}', PermisosEspecialesController::class . ':searchAccion');
+        $group->post('/saveaccion', PermisosEspecialesController::class . ':storeAccion');
+        $group->post('/deleteaccion', PermisosEspecialesController::class . ':deleteAccion');
+
+        $group->post('/savepermiso', PermisosEspecialesController::class . ':storePermiso');
+        $group->post('/updatepermiso', PermisosEspecialesController::class . ':updatePermiso');
+        $group->post('/deletepermiso', PermisosEspecialesController::class . ':deletePermiso');
+    });
+
     $group->group('/usuarios', function (RouteCollectorProxy $group) {
         $group->get('', UsuariosController::class . ':index');
-        $group->post('/roles', UsuariosController::class . ':roles');
-        $group->post('/person', UsuariosController::class . ':person');
-
         $group->post('', UsuariosController::class . ':list');
         $group->post('/save', UsuariosController::class . ':store');
-        $group->post('/search', UsuariosController::class . ':search');
-        $group->post('/update', UsuariosController::class . ':update');
-        $group->post('/delete', UsuariosController::class . ':delete');
+        $group->get('/search/{id}', UsuariosController::class . ':search');
+        $group->post('/update/{id}', UsuariosController::class . ':update');
+        $group->post('/delete/{id}', UsuariosController::class . ':delete');
+        // Endpoint para obtener personal sin usuario
+        $group->get('/personal', UsuariosController::class . ':getPersonalSinUsuario');
     })->add(PermissionMiddleware::class);
 
     $group->group('/personas', function (RouteCollectorProxy $group) {
         $group->get('', PersonasController::class . ':index');
-
         $group->post('', PersonasController::class . ':list');
         $group->post('/save', PersonasController::class . ':store');
-        $group->post('/search', PersonasController::class . ':search');
-        $group->post('/update', PersonasController::class . ':update');
-        $group->post('/delete', PersonasController::class . ':delete');
-    });
+        $group->get('/search/{id}', PersonasController::class . ':search');
+        $group->post('/update/{id}', PersonasController::class . ':update');
+        $group->post('/delete/{id}', PersonasController::class . ':delete');
+        // Endpoints adicionales
+        $group->get('/doc/dni/{dni}', PersonasController::class . ':searchByDNI');
+    })->add(PermissionMiddleware::class);
 
     $group->group('/roles', function (RouteCollectorProxy $group) {
         $group->get('', RolesController::class . ':index');
-
         $group->post('', RolesController::class . ':list');
         $group->post('/save', RolesController::class . ':store');
-        $group->post('/search', RolesController::class . ':search');
-        $group->post('/update', RolesController::class . ':update');
-        $group->post('/delete', RolesController::class . ':delete');
+        $group->get('/search/{id}', RolesController::class . ':search');
+        $group->post('/update/{id}', RolesController::class . ':update');
+        $group->post('/delete/{id}', RolesController::class . ':delete');
+    })->add(PermissionMiddleware::class);
+
+    $group->group('/doc', function (RouteCollectorProxy $group) {
+        $group->get('/dni/{dni}', BuscarDocController::class . ':buscarDni');
+        $group->get('/ruc/{ruc}', BuscarDocController::class . ':buscarRuc');
+    })->add(PermisosExtrasMiddleware::class);
+
+    $group->group('/pacientes', function (RouteCollectorProxy $group) {
+        $group->get('', PacientesController::class . ':index');
+
+        $group->post('', PacientesController::class . ':list');
+        $group->post('/save', PacientesController::class . ':store');
+        $group->get('/search/{id}', PacientesController::class . ':search');
+        $group->post('/update/{id}', PacientesController::class . ':update');
+        $group->post('/delete/{id}', PacientesController::class . ':delete');
+        $group->get('/pdf/{id}', PacientesController::class . ':generatePDF');
+    })->add(PermissionMiddleware::class);
+
+    $group->group('/personal', function (RouteCollectorProxy $group) {
+        $group->get('', PersonalController::class . ':index');
+
+        $group->post('', PersonalController::class . ':list');
+        $group->post('/save', PersonalController::class . ':store');
+        $group->get('/search/{id}', PersonalController::class . ':search');
+        $group->post('/update/{id}', PersonalController::class . ':update');
+        $group->post('/delete/{id}', PersonalController::class . ':delete');
+        $group->post('/search_select', PersonalController::class . ':search_select');
+        $group->get('/pdf/{id}', PersonalController::class . ':generatePDF');
+    })->add(PermissionMiddleware::class);
+
+    $group->group('/especialidades', function (RouteCollectorProxy $group) {
+        $group->get('', EspecialidadController::class . ':index');
+        $group->post('', EspecialidadController::class . ':list');
+        $group->post('/save', EspecialidadController::class . ':store');
+        $group->get('/search/{id}', EspecialidadController::class . ':search');
+        $group->post('/update/{id}', EspecialidadController::class . ':update');
+        $group->post('/delete/{id}', EspecialidadController::class . ':delete');
     })->add(PermissionMiddleware::class);
 })->add(new LoginAdminMiddleware());

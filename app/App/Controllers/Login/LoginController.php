@@ -59,8 +59,25 @@ class LoginController extends Controller
         if ($userData["usu_estado"] == 1 && $userData["usu_activo"] == 1) {
             $_SESSION['app_id'] = $userData['idusuario'];
             $_SESSION['app_r'] = $userData['idrol'];
-            $_SESSION['app_session'] = true;
+            $token = token();
+            $_SESSION['app_session'] = $token;
             $_SESSION["app_user"] = $userData["per_nombre"];
+
+            $model->emptyQuery();
+            $model->setTable("sis_sesiones");
+            $model->setId("idsesion");
+
+            $params = $request->getServerParams();
+
+            $model->create([
+                "idusuario" => $userData['idusuario'],
+                "session_token" => $token,
+                "tiempo_expiracion" => time() + $_ENV['SESSION_TIME'],
+                "ip" => $params['REMOTE_ADDR'] ?? null,
+                "fecha_registro" => date("Y-m-d H:i:s"),
+                "activo" => "1"
+            ]);
+            
             return $this->respondWithJson($response, ["status" => true, "message" => "Bienvenido!!", "data" => $userData["per_nombre"]]);
         }
         return $this->respondWithError($response, "Error inesperado.");

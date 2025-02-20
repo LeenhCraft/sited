@@ -172,6 +172,7 @@ class SubMenusController extends Controller
         $existe = $model
             ->where("sub_nombre", "LIKE", $data['name'])
             ->where("idsubmenu", "!=", $data['id'])
+            ->where("idmenu", $data['idmenu'])
             ->first();
         if (!empty($existe)) {
             return $this->respondWithError($response, "Ya tiene un submenu con el mismo nombre");
