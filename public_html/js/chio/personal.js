@@ -15,6 +15,7 @@ class Personal {
     this.btnPrintPDF = $(".btn-print-pdf");
     this.btnFiltrar = $("#btnFiltrar");
     this.btnLimpiar = $("#btnLimpiar");
+    this.crearUsuario = $("#crear_usuario");
     this.currentId = null;
     this.initTable();
     this.initSelect2();
@@ -149,7 +150,7 @@ class Personal {
 
   initSelect2() {
     $(".select2-ajax").select2({
-      theme: "bootstrap-5",
+      // theme: "bootstrap-5",
       width: "100%",
       ajax: {
         url: function () {
@@ -171,6 +172,26 @@ class Personal {
       minimumInputLength: 0,
       placeholder: "Seleccione una especialidad",
       dropdownParent: $(".select2-ajax").parent(),
+    });
+    $("#filtro_especialidad").select2({
+      placeholder: "Seleccione una especialidad",
+      ajax: {
+        url: function () {
+          return $(this).data("url");
+        },
+        method: "POST",
+        dataType: "json",
+        delay: 250,
+        data: function (params) {
+          return {
+            search: params.term,
+          };
+        },
+        processResults: function (data) {
+          return data;
+        },
+        cache: true,
+      },
     });
   }
 
@@ -220,6 +241,15 @@ class Personal {
       if (dni) this.searchByDNI(dni);
     });
 
+    this.crearUsuario.on("change", function () {
+      if (!$(this).is(":checked")) {
+        $(".crear-usuario").addClass("d-none");
+      } else {
+        $(".crear-usuario").removeClass("d-none");
+        $("#usuario").focus();
+      }
+    });
+
     this.btnFiltrar.on("click", () => this.reloadTable());
 
     this.btnLimpiar.on("click", () => this.limpiarFiltros());
@@ -252,7 +282,7 @@ class Personal {
     $("#fecha_fin").val("");
     $("#filtro_sexo").val("");
     $("#filtro_estado").val("activos");
-    $("#filtro_especialidad").val("");
+    $("#filtro_especialidad").val("").trigger("change");
     $("#filtro_search").val("");
     this.reloadTable();
   }
@@ -273,7 +303,27 @@ class Personal {
       const data = await response.json();
 
       if (data.status) {
-        Swal.fire("Éxito", data.message, "success");
+        // Si es un nuevo registro y existe una contraseña, mostrarla al usuario
+        if (!this.currentId && data.password) {
+          Swal.fire({
+            title: "Usuario registrado correctamente",
+            html: `
+              <div class="text-left">
+                <p>Personal médico registrado con éxito.</p>
+                <p class="mt-2"><strong>Credenciales de acceso:</strong></p>
+                <p><strong>Usuario:</strong> ${formData.get("usuario")}</p>
+                <p><strong>Contraseña:</strong> ${data.password}</p>
+                <p class="mt-2 text-warning">
+                  <i class="bx bx-error-circle"></i> Guarde esta información. No se volverá a mostrar.
+                </p>
+              </div>
+            `,
+            icon: "success",
+            confirmButtonText: "Entendido",
+          });
+        } else {
+          Swal.fire("Éxito", data.message, "success");
+        }
         this.modal.modal("hide");
         this.tabla.ajax.reload();
       } else {
@@ -296,6 +346,26 @@ class Personal {
       if (data.success) {
         this.currentId = id;
         this.fillForm(data.personal);
+        // Para el select2 con AJAX (especialidad)
+        if (data.personal.especialidad && data.personal.idespecialidad) {
+          // Crear una nueva opción con los valores recibidos
+          const newOption = new Option(
+            data.personal.especialidad, // texto a mostrar
+            data.personal.idespecialidad, // valor
+            true, // seleccionada
+            true // ya existente
+          );
+
+          // Agregar la opción al select y seleccionarla
+          $("#especialidad").empty().append(newOption).trigger("change");
+        }
+
+        // si esta declarado el usuario, mostrar el campo de contraseña
+        if (data.personal.usuario) {
+          $(".crear-usuario").removeClass("d-none");
+          $("#crear_usuario").prop("checked", true);
+        }
+
         this.modal.modal("show");
       } else {
         Swal.fire("Error", "No se encontró el personal médico", "error");
@@ -403,6 +473,7 @@ class Personal {
     this.form[0].reset();
     this.currentId = null;
     this.form.find("input, select, textarea").prop("disabled", false);
+    $(".crear-usuario").addClass("d-none");
     this.btnGuardar.show();
   }
 

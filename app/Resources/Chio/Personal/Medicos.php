@@ -1,6 +1,7 @@
 <?php header_web('Template.HeaderDashboard', $data);
 $permisos = $data['permisos'];
 $permissions = $data["permission"];
+$roles = $data['roles'];
 ?>
 <script>
     const permisos = <?php echo json_encode($permisos); ?>
@@ -47,17 +48,12 @@ $permissions = $data["permission"];
                     </div>
                     <div class="col-md-3">
                         <label class="form-label">Especialidad:</label>
-                        <select class="form-select" id="filtro_especialidad" name="filtro_especialidad">
+                        <select
+                            class="form-select"
+                            id="filtro_especialidad"
+                            name="filtro_especialidad"
+                            data-url="<?= base_url() ?>admin/personal/search_select">
                             <option value="">Todas</option>
-                            <option value="Medicina General">Medicina General</option>
-                            <option value="Pediatría">Pediatría</option>
-                            <option value="Ginecología">Ginecología</option>
-                            <option value="Cardiología">Cardiología</option>
-                            <option value="Dermatología">Dermatología</option>
-                            <option value="Traumatología">Traumatología</option>
-                            <option value="Oftalmología">Oftalmología</option>
-                            <option value="Psiquiatría">Psiquiatría</option>
-                            <option value="Nutrición">Nutrición</option>
                         </select>
                     </div>
                 </div>
@@ -119,6 +115,7 @@ $permissions = $data["permission"];
             </div>
             <form id="formPersonal" class="needs-validation" novalidate>
                 <div class="modal-body">
+                    <h5 class="text-primary fw-semibold">Datos Personales</h5>
                     <div class="row g-3">
                         <div class="col-md-6">
                             <label class="form-label">DNI <span class="text-danger">*</span></label>
@@ -143,7 +140,7 @@ $permissions = $data["permission"];
                         <div class="col-md-6">
                             <label class="form-label">Celular <span class="text-danger">*</span></label>
                             <input type="tel" class="form-control" id="celular" name="celular" required
-                                pattern="9[0-9]{8}" placeholder="Número de celular">
+                                pattern="9[0-9]{8}" placeholder="Número de celular" maxlength="9">
                             <div class="invalid-feedback">Ingrese un número válido que empiece con 9</div>
                         </div>
                         <div class="col-md-6">
@@ -170,12 +167,33 @@ $permissions = $data["permission"];
                             </select>
                             <div class="invalid-feedback">Seleccione la especialidad</div>
                         </div>
-
                         <div class="col-12">
                             <label class="form-label">Dirección <span class="text-danger">*</span></label>
                             <input type="text" class="form-control" id="direccion" name="direccion"
                                 placeholder="Dirección completa" required>
                             <div class="invalid-feedback">Por favor ingrese la dirección</div>
+                        </div>
+                    </div>
+                    <hr>
+                    <h5 class="text-primary fw-semibold">Datos para la Cuenta de Usuario</h5>
+                    <div class="form-check form-switch mb-2">
+                        <input class="form-check-input" type="checkbox" id="crear_usuario" name="crear_usuario">
+                        <label for="crear_usuario" class="form-check-label">Crear Usuario</label>
+                    </div>
+                    <div class="row g-3 crear-usuario d-none">
+                        <div class="col-12 col-md-6">
+                            <label class="form-label">Rol <span class="text-danger fw-bold">*</span></label>
+                            <select class="form-select" id="idrol" name="idrol">
+                                <option value="">Seleccione una opción...</option>
+                                <?php foreach ($roles as $rol) : ?>
+                                    <option value="<?= $rol['idrol'] ?>"><?= $rol['rol_nombre'] ?></option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <label class="form-label">Usuario <span class="text-danger fw-bold">*</span></label>
+                            <input type="text" class="form-control" id="usuario" name="usuario" required maxlength="255" placeholder="Nombre de usuario">
+                            <div class="invalid-feedback">Por favor ingrese el usuario</div>
                         </div>
                     </div>
                 </div>

@@ -19,6 +19,14 @@ class PersonalController extends Controller
 
     public function index($request, $response)
     {
+        // Obtener roles para el select
+        $modelRol = new TableModel();
+        $modelRol->setTable("sis_rol");
+        $modelRol->setId("idrol");
+        $roles = $modelRol
+            ->where('rol_estado', "1")
+            ->get();
+
         return $this->render($response, 'Chio.Personal.Medicos', [
             'titulo_web' => 'Gestión de Personal Médico',
             "url" => $request->getUri()->getPath(),
@@ -26,14 +34,13 @@ class PersonalController extends Controller
             "permission" => self::PERMISSION,
             "css" => [
                 "/vendor/select2/select2/dist/css/select2.min.css",
-                "/css/select2-bootstrap4.min.css",
-                "/css/select2.min.css",
                 "/css/select2-custom.css",
             ],
             "js" => [
-                "/vendor/select2/select2/dist/js/select2.min.js",
+                "/vendor/select2/select2/dist/js/select2.full.min.js",
                 "/js/chio/personal.js?v=" . time()
-            ]
+            ],
+            'roles' => $roles,
         ]);
     }
 
@@ -42,24 +49,27 @@ class PersonalController extends Controller
         try {
             $data = $this->sanitize($request->getParsedBody());
 
+            $this->table = "sd_personal_medico pm";
             $model = new TableModel();
             $model->setTable($this->table);
             $model->setId($this->id);
 
             $query = $model->select(
-                "idpersonal",
-                "dni",
-                "nombre",
-                "celular",
-                "edad",
-                "sexo",
-                "direccion",
-                "'especialidad' as especialidad",
-                "fecha_registro",
-                "ultima_actualizacion",
-                "eliminado",
-                "fecha_eliminacion"
-            );
+                "pm.idpersonal",
+                "pm.dni",
+                "pm.nombre",
+                "pm.celular",
+                "pm.edad",
+                "pm.sexo",
+                "pm.direccion",
+                "pm.fecha_registro",
+                "pm.ultima_actualizacion",
+                "pm.eliminado",
+                "pm.fecha_eliminacion",
+                "e.nombre as especialidad"
+            )
+                ->leftJoin("sd_personal_especialidad pe", "pe.idpersonal", "pm.idpersonal")
+                ->leftJoin("sd_especialidades e", "e.idespecialidad", "pe.idespecialidad");
 
             // Aplicar filtros
             if (
@@ -69,49 +79,49 @@ class PersonalController extends Controller
                 if (!empty($data['filtro_estado'])) {
                     switch ($data['filtro_estado']) {
                         case 'activos':
-                            $query->where('eliminado', "0");
+                            $query->where('pm.eliminado', "0");
                             break;
                         case 'eliminados':
-                            $query->where('eliminado', "1");
+                            $query->where('pm.eliminado', "1");
                             break;
                     }
                 } else {
-                    $query->where('eliminado', "0");
+                    $query->where('pm.eliminado', "0");
                 }
             } else {
-                $query->where('eliminado', "0");
+                $query->where('pm.eliminado', "0");
             }
 
             // Filtros de fecha
             if (!empty($data['fecha_inicio'])) {
-                $query->where('fecha_registro', '>=', $data['fecha_inicio'] . ' 00:00:00');
+                $query->where('pm.fecha_registro', '>=', $data['fecha_inicio'] . ' 00:00:00');
             }
             if (!empty($data['fecha_fin'])) {
-                $query->where('fecha_registro', '<=', $data['fecha_fin'] . ' 23:59:59');
+                $query->where('pm.fecha_registro', '<=', $data['fecha_fin'] . ' 23:59:59');
             }
 
             // Filtro por sexo
             if (!empty($data['filtro_sexo'])) {
-                $query->where('sexo', $data['filtro_sexo']);
+                $query->where('pm.sexo', $data['filtro_sexo']);
             }
 
             // Filtro por especialidad
             if (!empty($data['filtro_especialidad'])) {
-                $query->where('especialidad', $data['filtro_especialidad']);
+                $query->where('e.idespecialidad', $data['filtro_especialidad']);
             }
 
             // Búsqueda general
             if (!empty($data['filtro_search'])) {
                 $search = $data['filtro_search'];
                 $query->where(function ($q) use ($search) {
-                    $q->where('dni', 'LIKE', "%$search%")
-                        ->orWhere('nombre', 'LIKE', "%$search%")
-                        ->orWhere('celular', 'LIKE', "%$search%")
-                        ->orWhere('especialidad', 'LIKE', "%$search%");
+                    $q->where('pm.dni', 'LIKE', "%$search%")
+                        ->orWhere('pm.nombre', 'LIKE', "%$search%")
+                        ->orWhere('pm.celular', 'LIKE', "%$search%")
+                        ->orWhere('e.idespecialidad', 'LIKE', "%$search%");
                 });
             }
 
-            $arrData = $query->orderBy('nombre')->get();
+            $arrData = $query->orderBy('pm.nombre')->get();
 
             return $this->respondWithJson($response, $arrData);
         } catch (Exception $e) {
@@ -123,7 +133,6 @@ class PersonalController extends Controller
     {
         try {
             $this->checkPermission(self::PERMISSION, "create");
-
             $data = $this->sanitize($request->getParsedBody());
 
             if (!$this->validateData($data)) {
@@ -139,31 +148,141 @@ class PersonalController extends Controller
             }
 
             $marcaTiempo = date('Y-m-d H:i:s');
-            $model = new TableModel();
-            $model->setTable($this->table);
-            $model->setId($this->id);
 
-            // Verificar DNI duplicado
-            $personal = $model->where('dni', $data['documento'])->first();
-            if ($personal) {
-                return $this->respondWithError($response, "El DNI ya se encuentra registrado");
+            try {
+                // Verificar DNI duplicado en sd_personal_medico
+                $modelMedico = new TableModel();
+                $modelMedico->setTable($this->table);
+                $modelMedico->setId($this->id);
+
+                $personal = $modelMedico
+                    ->where('dni', $data['documento'])
+                    ->where("eliminado", "0")
+                    ->first();
+                if ($personal) {
+                    throw new Exception("El DNI ya se encuentra registrado en personal médico");
+                }
+
+                // 1. Insertar en sis_personal
+                $modelPersonal = new TableModel();
+                $modelPersonal->setTable("sis_personal");
+                $modelPersonal->setId("idpersona");
+
+                // Verificar DNI duplicado en sis_personal
+                $existingPersonal = $modelPersonal
+                    ->where('per_dni', $data['documento'])
+                    ->where("per_estado", "1")
+                    ->first();
+
+                $idPersona = $existingPersonal ? $existingPersonal : null;
+                if ($existingPersonal) {
+                    throw new Exception("El DNI ya se encuentra registrado en personal del sistema");
+                }
+
+                if (!$existingPersonal) {
+                    $idPersona = $modelPersonal->create([
+                        "per_dni" => $data["documento"],
+                        "per_nombre" => trim($data["nombre"]),
+                        "per_celular" => $data["celular"],
+                        "per_direcc" => $data["direccion"],
+                        "per_email" => null, // No es obligatorio
+                        "per_foto" => null, // Se inicializa como null
+                        "per_estado" => "1",
+                        "per_fecha" => $marcaTiempo
+                    ]);
+
+                    if (!$idPersona) {
+                        throw new Exception("Error al registrar en sis_personal");
+                    }
+                }
+
+                $password = null;
+                if (isset($data["crear_usuario"]) && $data["crear_usuario"] == "on") {
+
+                    // validar datos de usuario
+                    if (empty($data["usuario"])) {
+                        throw new Exception("El nombre de usuario es obligatorio");
+                    }
+
+                    if (empty($data["idrol"])) {
+                        throw new Exception("El rol de usuario es obligatorio");
+                    }
+
+                    // 2. Insertar en sis_usuarios
+                    $modelUsuario = new TableModel();
+                    $modelUsuario->setTable("sis_usuarios");
+                    $modelUsuario->setId("idusuario");
+
+                    // Verificar si ya existe el usuario
+                    $existingUser = $modelUsuario
+                        ->where('usu_usuario', $data["usuario"])
+                        ->where('usu_estado', "1")
+                        ->where('usu_activo', "1")
+                        ->first();
+
+                    if ($existingUser) {
+                        throw new Exception("El nombre de usuario ya existe");
+                    }
+
+                    // Generar contraseña
+                    $password = $this->generatePassword();
+                    $passwordHash = password_hash($password, PASSWORD_DEFAULT);
+
+                    $idUsuario = $modelUsuario->create([
+                        "idrol" => $data["idrol"],
+                        "idpersona" => $idPersona["idpersona"],
+                        "usu_usuario" => $data["usuario"],
+                        "usu_pass" => $passwordHash,
+                        "usu_token" => null,
+                        "usu_activo" => "1",
+                        "usu_estado" => "1",
+                        "usu_primera" => "1",
+                        "usu_twoauth" => "0",
+                        "usu_code_twoauth" => "",
+                        "usu_fecha" => $marcaTiempo
+                    ]);
+
+                    if (!$idUsuario) {
+                        throw new Exception("Error al registrar en sis_usuarios");
+                    }
+                }
+
+                // 3. Insertar en sd_personal_medico
+                $idMedico = $modelMedico->create([
+                    "dni" => $data["documento"],
+                    "nombre" => trim($data["nombre"]),
+                    "celular" => $data["celular"],
+                    "edad" => $data["edad"],
+                    "sexo" => $data["sexo"],
+                    "direccion" => $data["direccion"],
+                    "fecha_registro" => $marcaTiempo,
+                    "creado_por" => $_SESSION["app_id"]
+                ]);
+
+                if (!$idMedico) {
+                    throw new Exception("Error al registrar en sd_personal_medico");
+                }
+
+                // 4. Registrar especialidad
+                $modelEspecialidad = new TableModel();
+                $modelEspecialidad->setTable("sd_personal_especialidad");
+                $modelEspecialidad->setId("id_per_esp");
+
+                $modelEspecialidad->create([
+                    "idespecialidad" => $data["especialidad"],
+                    "idpersonal" => $idMedico["idpersonal"],
+                ]);
+
+                return $this->respondWithJson($response, [
+                    "status" => true,
+                    "message" => "Personal médico registrado correctamente",
+                    "password" => $password // Esta contraseña deberá ser mostrada al usuario
+                ]);
+            } catch (Exception $e) {
+                // Si hay error, revertir la transacción
+                // $modelPersonal->rollBack();
+                throw $e;
             }
-
-            $rq = $model->create([
-                "dni" => $data["documento"],
-                "nombre" => trim($data["nombre"]),
-                "celular" => $data["celular"],
-                "edad" => $data["edad"],
-                "sexo" => $data["sexo"],
-                "direccion" => $data["direccion"],
-                // "especialidad" => $data["especialidad"],
-                "fecha_registro" => $marcaTiempo,
-                "creado_por" => $_SESSION["app_id"],
-            ]);
-
-            return $rq
-                ? $this->respondWithSuccess($response, "Personal médico registrado correctamente")
-                : $this->respondWithError($response, "Error al registrar el personal médico");
         } catch (Exception $e) {
             return $this->respondWithError($response, $e->getMessage());
         }
@@ -175,34 +294,70 @@ class PersonalController extends Controller
             $this->checkPermission(self::PERMISSION, "update");
 
             $id = $args['id'];
+            $this->table = "sd_personal_medico pm";
             $model = new TableModel();
             $model->setTable($this->table);
             $model->setId($this->id);
 
             $model
                 ->select(
-                    "idpersonal",
-                    "dni as documento",
-                    "nombre",
-                    "celular",
-                    "edad",
-                    "sexo",
-                    "direccion",
-                    "'especialidad' as especialidad",
+                    "pm.idpersonal",
+                    "pm.dni as documento",
+                    "pm.nombre",
+                    "pm.celular",
+                    "pm.edad",
+                    "pm.sexo",
+                    "pm.direccion",
+                    "e.idespecialidad",
+                    "e.nombre as especialidad",
                 )
-                ->where("idpersonal", $id);
+                ->leftJoin("sd_personal_especialidad pe", "pe.idpersonal", "pm.idpersonal")
+                ->leftJoin("sd_especialidades e", "e.idespecialidad", "pe.idespecialidad")
+                ->where("pm.idpersonal", $id);
             if (
                 !isset($this->permisos_extras[self::PERMISSION]["developer"]) ||
                 $this->permisos_extras[self::PERMISSION]["developer"] != "1"
             ) {
-                $model->where('eliminado', "0");
+                $model->where('pm.eliminado', "0");
             }
 
             $personal = $model->first();
 
+            // Buscar en sis_personal
+            $modelPersonal = new TableModel();
+            $modelPersonal->setTable("sis_personal");
+            $modelPersonal->setId("idpersona");
+
+            $sisPersonal = $modelPersonal
+                ->where('per_dni', $personal['documento'])
+                ->where("per_estado", "1")
+                ->first();
+            // Buscar en sis_usuarios si existe el personal
+            $datosUsuario = [];
+            if ($sisPersonal) {
+                $modelUsuario = new TableModel();
+                $modelUsuario->setTable("sis_usuarios");
+                $modelUsuario->setId("idusuario");
+
+                $usuario = $modelUsuario
+                    ->where('idpersona', $sisPersonal['idpersona'])
+                    ->where("usu_estado", "1")
+                    ->first();
+
+                if ($usuario) {
+                    $datosUsuario = [
+                        "idrol" => $usuario['idrol'],
+                        "usuario" => $usuario['usu_usuario']
+                    ];
+                }
+            }
+
             if (!$personal) {
                 return $this->respondWithError($response, "Personal médico no encontrado");
             }
+
+            // Combinar la información
+            $personal = array_merge($personal, $datosUsuario);
 
             return $this->respondWithJson($response, [
                 "success" => true,
@@ -233,36 +388,122 @@ class PersonalController extends Controller
                 return $this->respondWithError($response, "El celular debe tener 9 dígitos");
             }
 
-            $model = new TableModel();
-            $model->setTable($this->table);
-            $model->setId($this->id);
+            try {
+                // 1. Buscar el personal médico actual
+                $modelMedico = new TableModel();
+                $modelMedico->setTable($this->table);
+                $modelMedico->setId($this->id);
 
-            // Verificar si existe otro personal con el mismo DNI (excluyendo el actual)
-            $existingPersonal = $model->where('dni', $data['documento'])
-                ->where('idpersonal', '!=', $id)
-                ->first();
+                $personalMedico = $modelMedico->find($id);
+                if (!$personalMedico) {
+                    throw new Exception("Personal médico no encontrado");
+                }
 
-            if ($existingPersonal) {
-                return $this->respondWithError($response, "El DNI ya se encuentra registrado en otro personal");
+                // Verificar si existe otro personal con el mismo DNI (excluyendo el actual)
+                $existingPersonal = $modelMedico
+                    ->where('dni', $data['documento'])
+                    ->where('idpersonal', '!=', $id)
+                    ->where("eliminado", "0")
+                    ->first();
+                if ($existingPersonal) {
+                    throw new Exception("El DNI ya se encuentra registrado en otro personal médico");
+                }
+
+                // 2. Actualizar en sis_personal
+                $modelPersonal = new TableModel();
+                $modelPersonal->setTable("sis_personal");
+                $modelPersonal->setId("idpersona");
+
+                // Buscar el registro en sis_personal por DNI
+                $personal = $modelPersonal
+                    ->where('per_dni', $personalMedico['dni'])
+                    ->where("per_estado", "1")
+                    ->first();
+                if (!$personal) {
+                    throw new Exception("Registro de personal no encontrado en el sistema");
+                }
+
+                // Verificar si hay otro personal con el mismo DNI nuevo
+                if ($personalMedico['dni'] != $data['documento']) {
+                    $existingPersonalSys = $modelPersonal
+                        ->where('per_dni', $data['documento'])
+                        ->where('idpersona', '!=', $personal['idpersona'])
+                        ->where("per_estado", "1")
+                        ->first();
+                    if ($existingPersonalSys) {
+                        throw new Exception("El DNI ya se encuentra registrado en otro personal del sistema");
+                    }
+                }
+
+                // Actualizar sis_personal
+                $modelPersonal->update($personal['idpersona'], [
+                    "per_dni" => $data["documento"],
+                    "per_nombre" => trim($data["nombre"]),
+                    "per_celular" => $data["celular"],
+                    "per_direcc" => $data["direccion"]
+                ]);
+
+                // 3. Actualizar sis_usuarios (solo si se cambió el rol)
+                $modelUsuario = new TableModel();
+                $modelUsuario->setTable("sis_usuarios");
+                $modelUsuario->setId("idusuario");
+
+                // Buscar usuario por idpersona
+                $usuario = $modelUsuario
+                    ->where('idpersona', $personal['idpersona'])
+                    ->where("usu_estado", "1")
+                    ->first();
+                if ($usuario) {
+                    // Verificar si el nombre de usuario ya existe (excluyendo el actual)
+                    if ($usuario['usu_usuario'] != $data['usuario']) {
+                        $existingUsername = $modelUsuario
+                            ->where('usu_usuario', $data['usuario'])
+                            ->where('idusuario', '!=', $usuario['idusuario'])
+                            ->where("usu_estado", "1")
+                            ->first();
+                        if ($existingUsername) {
+                            throw new Exception("El nombre de usuario ya existe");
+                        }
+                    }
+
+                    // Actualizar usuario
+                    $modelUsuario->update($usuario['idusuario'], [
+                        "idrol" => $data["idrol"],
+                        "usu_usuario" => $data["usuario"]
+                    ]);
+                }
+
+                // 4. Actualizar sd_personal_medico
+                $marcaTiempo = date('Y-m-d H:i:s');
+                $rq = $modelMedico->update($id, [
+                    "dni" => $data["documento"],
+                    "nombre" => trim($data["nombre"]),
+                    "celular" => $data["celular"],
+                    "edad" => $data["edad"],
+                    "sexo" => $data["sexo"],
+                    "direccion" => $data["direccion"],
+                    "ultima_actualizacion" => $marcaTiempo,
+                    "actualizado_por" => $_SESSION["app_id"],
+                ]);
+
+                // 5. Atualiizar especialidad
+                $modelEspecialidad = new TableModel();
+                $modelEspecialidad->setTable("sd_personal_especialidad");
+                $modelEspecialidad->setId("id_per_esp");
+
+                $especialidad = $modelEspecialidad
+                    ->where('idpersonal', $id)
+                    ->first();
+                if ($especialidad) {
+                    $modelEspecialidad->update($especialidad['id_per_esp'], [
+                        "idespecialidad" => $data["especialidad"]
+                    ]);
+                }
+
+                return $this->respondWithSuccess($response, "Personal médico actualizado correctamente");
+            } catch (Exception $e) {
+                throw $e;
             }
-
-            $marcaTiempo = date('Y-m-d H:i:s');
-
-            $rq = $model->update($id, [
-                "dni" => $data["documento"],
-                "nombre" => trim($data["nombre"]),
-                "celular" => $data["celular"],
-                "edad" => $data["edad"],
-                "sexo" => $data["sexo"],
-                "direccion" => $data["direccion"],
-                // "especialidad" => $data["especialidad"],
-                "ultima_actualizacion" => $marcaTiempo,
-                "actualizado_por" => $_SESSION["app_id"],
-            ]);
-
-            return $rq
-                ? $this->respondWithSuccess($response, "Personal médico actualizado correctamente")
-                : $this->respondWithError($response, "Error al actualizar el personal médico");
         } catch (Exception $e) {
             return $this->respondWithError($response, $e->getMessage());
         }
@@ -278,21 +519,54 @@ class PersonalController extends Controller
             $model->setTable($this->table);
             $model->setId($this->id);
 
-            $personal = $model->where('idpersonal', $id)
-                ->where('eliminado', false)
+            $personal = $model
+                ->where('idpersonal', $id)
+                ->where('eliminado', "0")
                 ->first();
-
             if (!$personal) {
                 return $this->respondWithError($response, "Personal médico no encontrado");
             }
 
-            // Aquí podrías agregar verificaciones adicionales
-            // Por ejemplo, verificar si el personal tiene citas asignadas
+            // 2. Buscar en sis_personal por DNI
+            $modelPersonal = new TableModel();
+            $modelPersonal->setTable("sis_personal");
+            $modelPersonal->setId("idpersona");
+
+            $sisPersonal = $modelPersonal
+                ->where('per_dni', $personal['dni'])
+                ->where("per_estado", "1")
+                ->first();
+            if (!$sisPersonal) {
+                throw new Exception("No se encontró el registro en el sistema de personal");
+            }
+
+            // 3. Buscar usuario por idpersona
+            $modelUsuario = new TableModel();
+            $modelUsuario->setTable("sis_usuarios");
+            $modelUsuario->setId("idusuario");
+
+            $usuario = $modelUsuario
+                ->where('idpersona', $sisPersonal['idpersona'])
+                ->where("usu_estado", "1")
+                ->first();
+            if ($usuario) {
+                // 5. Desactivar en sis_usuarios
+                $modelUsuario->update($usuario['idusuario'], [
+                    "usu_activo" => "0",
+                    "usu_estado" => "0"
+                ]);
+            }
 
             $marcaTiempo = date('Y-m-d H:i:s');
 
+            // 4. Desactivar en sis_personal
+            $modelPersonal->update($sisPersonal['idpersona'], [
+                "per_estado" => "0"
+            ]);
+
+            // 6. Marcar como eliminado en sd_personal_medico
             $rq = $model->update($id, [
-                "eliminado" => true,
+                "eliminado" => "1",
                 "fecha_eliminacion" => $marcaTiempo,
                 "eliminado_por" => $_SESSION["app_id"]
             ]);
@@ -341,7 +615,7 @@ class PersonalController extends Controller
             'edad',
             'sexo',
             'direccion',
-            'especialidad'
+            'especialidad',
         ];
 
         foreach ($required as $field) {
@@ -506,5 +780,15 @@ class PersonalController extends Controller
         } catch (Exception $e) {
             return $this->respondWithError($response, $e->getMessage());
         }
+    }
+
+    private function generatePassword($length = 8)
+    {
+        $chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+        $password = '';
+        for ($i = 0; $i < $length; $i++) {
+            $password .= $chars[rand(0, strlen($chars) - 1)];
+        }
+        return $password;
     }
 }
