@@ -192,6 +192,7 @@ class UsuariosController extends Controller
         try {
             $this->checkPermission(self::PERMISSION, "update");
 
+            $this->table = "sis_usuarios u";
             $id = $args['id'];
             $model = new TableModel();
             $model->setTable($this->table);
