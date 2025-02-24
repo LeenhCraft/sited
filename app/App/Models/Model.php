@@ -22,7 +22,7 @@ class Model
     protected $select = "*";
     protected $where, $values = [];
 
-    protected $join = "", $orderBy = "", $limit = "";
+    protected $join = "", $orderBy = "", $limit = "", $offset = "";
 
     public function __construct()
     {
@@ -41,6 +41,38 @@ class Model
             die("Connection failed: " . $this->connection->connect_error);
         }
         $this->connection->set_charset($this->db_charset);
+    }
+
+    /**
+     * Inicia una transacción
+     * @return bool
+     */
+    public function beginTransaction()
+    {
+        $this->connection->autocommit(FALSE);
+        return $this->connection->begin_transaction();
+    }
+
+    /**
+     * Confirma una transacción
+     * @return bool
+     */
+    public function commit()
+    {
+        $result = $this->connection->commit();
+        $this->connection->autocommit(TRUE);
+        return $result;
+    }
+
+    /**
+     * Revierte una transacción
+     * @return bool
+     */
+    public function rollBack()
+    {
+        $result = $this->connection->rollback();
+        $this->connection->autocommit(TRUE);
+        return $result;
     }
 
     public function query($sql, $data = [], $params = null)
@@ -203,7 +235,6 @@ class Model
         return $this;
     }
 
-    // funcion para vaciar querys
     public function emptyQuery()
     {
         $this->query = null;
@@ -217,12 +248,19 @@ class Model
         $this->join = "";
         $this->orderBy = "";
         $this->limit = "";
+        $this->offset = "";
         return $this;
     }
 
     public function limit($limit)
     {
         $this->limit = " LIMIT {$limit}";
+        return $this;
+    }
+
+    public function offset($offset)
+    {
+        $this->limit = " OFFSET {$offset}";
         return $this;
     }
 
@@ -254,6 +292,10 @@ class Model
 
             if ($this->limit) {
                 $sql .= $this->limit;
+            }
+
+            if ($this->offset) {
+                $sql .= $this->offset;
             }
 
             $this->query($sql, $this->values, $this->params);
@@ -302,6 +344,10 @@ class Model
                 $sql .= $this->limit;
             }
 
+            if ($this->offset) {
+                $sql .= $this->offset;
+            }
+
             $this->query($sql, $this->values, $this->params);
         }
         return $this->query->fetch_all(MYSQLI_ASSOC);
@@ -343,6 +389,10 @@ class Model
 
             if ($this->limit) {
                 $sql .= $this->limit;
+            }
+
+            if ($this->offset) {
+                $sql .= $this->offset;
             }
 
             $data = $this->query($sql, $this->values, $this->params)->get();
@@ -494,7 +544,6 @@ class Model
         return $this->connection->affected_rows;
     }
 
-    // funcion para ejecutar multiples consultas en una sola linea con mysqli_multi_query
     public function multiQuery($sql)
     {
         return $this->connection->multi_query($sql);
