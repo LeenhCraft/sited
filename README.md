@@ -5,6 +5,16 @@
 
 
 
+## Prefijos en la base de datos
+
+En las tablas del sistema tenemos diferentes prefijos usados para clasificar las diferentes tablas
+| Prefijo           | Significado                       |
+| ----------------- | --------------------------------- |
+| sd_               | Sistema diabetes                  |
+| pr_               | Sistema preguntas y respuestas    |
+| sis_              | Sistema principal                 |
+
+
 ## Querys para limpiar
 
 #### Limpiar personal medidco, usuarios y personas en el sistema
