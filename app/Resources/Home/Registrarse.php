@@ -104,8 +104,39 @@
                     <p class="mb-6">¡Haz que la gestión de tus aplicaciones sea fácil y divertida!</p>
 
                     <form id="formAuthentication" class="mb-6" action="index.html" method="GET">
+                        <!-- Reemplazar solo la sección del campo DNI por este código -->
                         <div class="mb-6 form-control-validation">
-                            <label for="username" class="form-label">Username</label>
+                            <label for="dni" class="form-label">DNI</label>
+                            <div class="input-group">
+                                <input
+                                    type="number"
+                                    class="form-control"
+                                    id="dni"
+                                    name="dni"
+                                    placeholder="Ingrese su número de DNI"
+                                    autofocus />
+                                <button
+                                    class="btn btn-outline-primary"
+                                    type="button"
+                                    id="buscarDNI">
+                                    <i class="icon-base bx bx-search"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="mb-6 form-control-validation">
+                            <label for="nombre_completo" class="form-label">Nombre</label>
+                            <input
+                                type="text"
+                                class="form-control"
+                                id="nombre_completo"
+                                name="nombre_completo"
+                                placeholder="Ingrese su nombre completo"
+                                autofocus />
+                        </div>
+
+
+                        <div class="mb-6 form-control-validation">
+                            <label for="username" class="form-label">Usuario</label>
                             <input
                                 type="text"
                                 class="form-control"
@@ -115,11 +146,11 @@
                                 autofocus />
                         </div>
                         <div class="mb-6 form-control-validation">
-                            <label for="email" class="form-label">Email</label>
+                            <label for="email" class="form-label">Correo</label>
                             <input type="text" class="form-control" id="email" name="email" placeholder="Enter your email" />
                         </div>
                         <div class="form-password-toggle form-control-validation">
-                            <label class="form-label" for="password">Password</label>
+                            <label class="form-label" for="password">Contraseña</label>
                             <div class="input-group input-group-merge">
                                 <input
                                     type="password"
@@ -135,18 +166,18 @@
                             <div class="form-check">
                                 <input class="form-check-input" type="checkbox" id="terms-conditions" name="terms" />
                                 <label class="form-check-label" for="terms-conditions">
-                                    I agree to
-                                    <a href="javascript:void(0);">privacy policy & terms</a>
+                                    Acepto la
+                                    <a href="javascript:void(0);">política de privacidad y los términos</a>
                                 </label>
                             </div>
                         </div>
-                        <button class="btn btn-primary d-grid w-100">Sign up</button>
+                        <button type="submit" class="btn btn-primary d-grid w-100">Sign up</button>
                     </form>
 
                     <p class="text-center">
-                        <span>Already have an account?</span>
-                        <a href="auth-login-cover.html">
-                            <span>Sign in instead</span>
+                        <span>¿Ya tienes una cuenta?</span>
+                        <a href="/iniciar-sesion">
+                            <span>Inicia sesión</span>
                         </a>
                     </p>
 
@@ -197,6 +228,21 @@
     <script src="/assets/vendor/libs/i18n/i18n.js"></script>
 
     <script src="/assets/vendor/js/menu.js"></script>
+    <script src="/node_modules/sweetalert2/dist/sweetalert2.all.min.js"></script>
+    <script>
+        const Toast = Swal.mixin({
+            toast: true,
+            position: "top-end",
+            showConfirmButton: false,
+            showCloseButton: true,
+            timer: 5000,
+            timerProgressBar: true,
+            didOpen: (toast) => {
+                toast.addEventListener("mouseenter", Swal.stopTimer);
+                toast.addEventListener("mouseleave", Swal.resumeTimer);
+            },
+        });
+    </script>
 
     <!-- endbuild -->
 
@@ -210,7 +256,13 @@
     <script src="/assets/js/main.js"></script>
 
     <!-- Page JS -->
-    <script src="/assets/js/pages-auth.js"></script>
+    <?php
+    if (isset($data['js']) && !empty($data['js'])) {
+        for ($i = 0; $i < count($data['js']); $i++) {
+            echo '<script src="' . $data['js'][$i] . '"></script>' . PHP_EOL;
+        }
+    }
+    ?>
 </body>
 
 </html>

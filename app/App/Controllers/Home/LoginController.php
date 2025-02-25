@@ -21,10 +21,15 @@ class LoginController extends Controller
             //     "/assets/vendor/css/pages/ui-carousel.css",
             //     "/assets/vendor/libs/swiper/swiper.css"
             // ],
-            // "js" => [
-            //     "/assets/vendor/libs/swiper/swiper.js",
-            //     "/assets/js/ui-carousel.js",
-            // ]
+            "js" => [
+                "/js/chio/login-user.js?v=" . time()
+            ]
         ]);
+    }
+
+    public function store($request, $response)
+    {
+        $data = $request->getParsedBody();
+        return $this->respondWithJson($response, $data);
     }
 }

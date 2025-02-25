@@ -138,7 +138,7 @@
                                 </a>
                             </div>
                         </div>
-                        <button class="btn btn-primary d-grid w-100">Sign in</button>
+                        <button type="submit" class="btn btn-primary d-grid w-100">Sign in</button>
                     </form>
 
                     <p class="text-center">
@@ -174,6 +174,22 @@
 
     <script src="/assets/vendor/js/menu.js"></script>
 
+    <script src="/node_modules/sweetalert2/dist/sweetalert2.all.min.js"></script>
+    <script>
+        const Toast = Swal.mixin({
+            toast: true,
+            position: "top-end",
+            showConfirmButton: false,
+            showCloseButton: true,
+            timer: 5000,
+            timerProgressBar: true,
+            didOpen: (toast) => {
+                toast.addEventListener("mouseenter", Swal.stopTimer);
+                toast.addEventListener("mouseleave", Swal.resumeTimer);
+            },
+        });
+    </script>
+
     <!-- endbuild -->
 
     <!-- Vendors JS -->
@@ -186,7 +202,13 @@
     <script src="/assets/js/main.js"></script>
 
     <!-- Page JS -->
-    <script src="/assets/js/pages-auth.js"></script>
+    <?php
+    if (isset($data['js']) && !empty($data['js'])) {
+        for ($i = 0; $i < count($data['js']); $i++) {
+            echo '<script src="' . $data['js'][$i] . '"></script>' . PHP_EOL;
+        }
+    }
+    ?>
 </body>
 
 </html>
