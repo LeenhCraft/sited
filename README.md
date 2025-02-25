@@ -1,9 +1,15 @@
-Crear Commits con mensajes significativos
-========================================
-https://commitlint.io/
+# Sistema de Identificación de Tendencias de la Diabetes Grado 2
+## Pagina para hacer commits
+
+ - [commitlint.io](https://commitlint.io/)
+
+
+
+## Querys para limpiar
+
+#### Limpiar personal medidco, usuarios y personas en el sistema
 
 ```sql
-
 TRUNCATE TABLE sd_personal_medico;
 TRUNCATE TABLE sd_personal_especialidad;
 TRUNCATE TABLE sis_personal;
@@ -16,4 +22,3 @@ INSERT INTO `sis_personal` (`idpersona`, `per_dni`, `per_nombre`, `per_celular`,
 
 --72845692
 ```
-
