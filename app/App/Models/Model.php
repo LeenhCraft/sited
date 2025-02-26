@@ -536,11 +536,24 @@ class Model
         return $this->find($id, $isUuid);
     }
 
-    public function delete($id, $isUuid = false)
+    public function delete($conditions = null)
     {
-        $paramType = $isUuid ? 's' : 'i';
-        $sql = "DELETE FROM {$this->table} WHERE {$this->id} = ?";
-        $this->query($sql, [$id], $paramType);
+        $sql = "DELETE FROM {$this->table}";
+
+        if (is_numeric($conditions) || is_string($conditions) && !strpos($conditions, '=')) {
+            // Caso tradicional: se pasó un ID
+            $paramType = is_numeric($conditions) ? 'i' : 's';
+            $sql .= " WHERE {$this->id} = ?";
+            $this->query($sql, [$conditions], $paramType);
+        } else if (is_string($conditions)) {
+            // Caso nuevo: se pasó una condición personalizada
+            $sql .= " WHERE {$conditions}";
+            $this->query($sql);
+        } else {
+            // Sin condiciones, eliminaría toda la tabla (peligroso)
+            $this->query($sql);
+        }
+
         return $this->connection->affected_rows;
     }
 
