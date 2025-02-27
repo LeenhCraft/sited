@@ -17,6 +17,7 @@ use App\Controllers\Admin\UsuariosController;
 use App\Controllers\Chio\EspecialidadController;
 use App\Controllers\Chio\PacientesController;
 use App\Controllers\Chio\PersonalController;
+use App\Controllers\Chio\PreguntasController;
 use App\Controllers\Login\LoginController;
 use App\Controllers\Login\LogoutController;
 
@@ -153,5 +154,15 @@ $app->group('/admin', function (RouteCollectorProxy $group) {
         $group->get('/search/{id}', EspecialidadController::class . ':search');
         $group->post('/update/{id}', EspecialidadController::class . ':update');
         $group->post('/delete/{id}', EspecialidadController::class . ':delete');
+    })->add(PermissionMiddleware::class);
+
+    $group->group('/preguntas', function (RouteCollectorProxy $group) {
+        $group->get('', PreguntasController::class . ':index');
+        $group->post('/list', PreguntasController::class . ':list');
+        $group->get('/tipos-respuesta', PreguntasController::class . ':tiposRespuesta');
+        $group->post('/guardar', PreguntasController::class . ':guardar');
+        $group->get('/obtener/{id}', PreguntasController::class . ':obtener');
+        $group->post('/actualizar/{id}', PreguntasController::class . ':actualizar');
+        $group->post('/eliminar/{id}', PreguntasController::class . ':eliminar');
     })->add(PermissionMiddleware::class);
 })->add(new LoginAdminMiddleware());
