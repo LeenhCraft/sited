@@ -113,7 +113,8 @@ class BuscarDocController extends Controller
                     'tk' => $_ENV['API_TOKEN']
                 ],
                 'timeout' => 30,
-                'http_errors' => false
+                'http_errors' => false,
+                'verify' => false
             ]);
 
             $body = $response->getBody()->getContents();
