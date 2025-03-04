@@ -88,10 +88,10 @@ $permissions = $data["permission"];
                                     </div>
                                     <div class="text-center mt-4">
                                         <a href="/admin/pacientes" class="btn btn-outline-secondary mr-2">
-                                            <i class="fas fa-user-plus"></i> Registrar Nuevo Paciente
+                                            <i class="fas fa-user-plus me-2"></i> Registrar Nuevo Paciente
                                         </a>
                                         <button type="button" id="btn-continuar-datos" class="btn btn-primary" disabled>
-                                            Continuar <i class="fas fa-arrow-right ml-2"></i>
+                                            Continuar <i class="fas fa-arrow-right ms-2"></i>
                                         </button>
                                     </div>
                                 </div>
@@ -168,10 +168,10 @@ $permissions = $data["permission"];
                                         </div>
                                         <div class="text-center mt-4">
                                             <button type="button" id="btn-volver-paciente" class="btn btn-outline-secondary mr-2">
-                                                <i class="fas fa-arrow-left mr-2"></i> Volver
+                                                <i class="fas fa-arrow-left me-2"></i> Volver
                                             </button>
                                             <button type="submit" id="btn-continuar-test" class="btn btn-primary">
-                                                Continuar <i class="fas fa-arrow-right ml-2"></i>
+                                                Continuar <i class="fas fa-arrow-right ms-2"></i>
                                             </button>
                                         </div>
                                     </form>
@@ -221,7 +221,7 @@ $permissions = $data["permission"];
                             <div class="row mt-4">
                                 <div class="col-12 text-center">
                                     <button type="button" id="btn-volver-datos" class="btn btn-outline-secondary mr-3">
-                                        <i class="fas fa-arrow-left mr-2"></i> Volver
+                                        <i class="fas fa-arrow-left me-2"></i> Volver
                                     </button>
                                     <button type="button" id="btn-finalizar" class="btn btn-primary" disabled>
                                         Finalizar Test <i class="fas fa-check ms-2"></i>
@@ -254,12 +254,12 @@ $permissions = $data["permission"];
                             <div class="row mt-5">
                                 <div class="col-md-6 text-md-left text-center">
                                     <button type="button" id="btn-imprimir" class="btn btn-secondary">
-                                        <i class="fas fa-print mr-2"></i> Imprimir resultados
+                                        <i class="fas fa-print me-2"></i> Imprimir resultados
                                     </button>
                                 </div>
                                 <div class="col-md-6 text-md-right text-center mt-3 mt-md-0">
                                     <button type="button" id="btn-reiniciar" class="btn btn-primary">
-                                        <i class="fas fa-redo mr-2"></i> Realizar nuevo test
+                                        <i class="fas fa-redo ms-2"></i> Realizar nuevo test
                                     </button>
                                 </div>
                             </div>
