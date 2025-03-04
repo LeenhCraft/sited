@@ -95,15 +95,23 @@ def process_excel_files(input_files, output_file, metadata_file=None, combine=Tr
             if 'Tendencia' in df.columns:
                 # Si Tendencia es numérica, convertir a categórica
                 if pd.api.types.is_numeric_dtype(df['Tendencia']):
-                    tendency_map = {0: 'Bajo', 1: 'Medio', 2: 'Alto'}
+                    tendency_map = {
+                        0: 'Bajo', 
+                        1: 'Moderado', 
+                        2: 'Alto', 
+                        3: 'Bajo/Moderado',
+                        4: 'Bajo/Alto',
+                        5: 'Moderado/Alto'
+                    }
                     df['Tendencia'] = df['Tendencia'].map(tendency_map)
                 
                 # Asegurar que solo tenga valores permitidos
-                valid_tendencies = ['Bajo', 'Medio', 'Alto']
+                valid_tendencies = ['Bajo', 'Moderado', 'Alto', 'Bajo/Moderado', 'Bajo/Alto', 'Moderado/Alto']
                 mask = df['Tendencia'].isin(valid_tendencies)
                 if not mask.all():
                     invalid_values = df.loc[~mask, 'Tendencia'].unique()
                     print(f"Advertencia: Valores no válidos en Tendencia: {invalid_values}")
+                    print("Estos registros serán filtrados.")
                     df = df[mask]
             
             # Eliminar filas con valores faltantes

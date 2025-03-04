@@ -89,3 +89,178 @@ INSERT INTO pr_respuestas (id_pregunta, id_usuario, id_tipo_respuesta, contenido
 TRUNCATE TABLE sd_test_preguntas;
 TRUNCATE TABLE sd_test;
 ```
+
+
+# Documentación de `data-preparation.py`
+
+## Descripción
+Script para preparar y combinar datos de diabetes desde archivos Excel, con validación, conversión de tipos y generación de metadatos.
+
+## Uso básico
+```bash
+python data-preparation.py --input archivo1.xlsx archivo2.xlsx --output datos_procesados.csv
+```
+
+## Argumentos
+| Argumento | Abreviación | Descripción | Requerido |
+|-----------|-------------|-------------|-----------|
+| `--input` | `-i` | Rutas a los archivos Excel (acepta múltiples archivos) | Sí |
+| `--output` | `-o` | Ruta para guardar el CSV procesado | Sí |
+| `--metadata` | `-m` | Ruta para guardar los metadatos en JSON | No |
+| `--no-combine` | - | No combinar múltiples archivos | No |
+| `--quiet` | `-q` | Modo silencioso, sin mensajes de progreso | No |
+
+## Estructura de datos esperada
+El script espera archivos Excel con las siguientes columnas:
+
+| Columna | Tipo |
+|---------|------|
+| Edad | int |
+| IMC | int |
+| Ansiedad_Estres | int |
+| Consumo_Grasas | int |
+| Sed_Hambre | int |
+| Antecedentes_Glucosa | int |
+| Vision_Borrosa | int |
+| Cicatrizacion_Lenta | int |
+| Cansancio_Debilidad | int |
+| Hormigueo_Entumecimiento | int |
+| Actividad_Fisica | int |
+| Consumo_Frutas_Verduras | int |
+| Antecedentes_Familiares | int |
+| Tendencia | category ("Bajo", "Moderado", "Alto", "Bajo/Moderado", "Bajo/Alto", "Moderado/Alto") |
+
+## Ejemplos de uso
+
+### Procesar un único archivo
+```bash
+python data-preparation.py --input datos.xlsx --output datos_procesados.csv
+```
+
+### Combinar múltiples archivos
+```bash
+python data-preparation.py --input datos1.xlsx datos2.xlsx datos3.xlsx --output datos_combinados.csv
+```
+
+### Especificar ruta para metadatos
+```bash
+python data-preparation.py --input datos.xlsx --output datos_procesados.csv --metadata estadisticas.json
+```
+
+### Modo silencioso
+```bash
+python data-preparation.py --input datos.xlsx --output datos_procesados.csv --quiet
+```
+
+### Procesar solo el primer archivo
+```bash
+python data-preparation.py --input datos1.xlsx datos2.xlsx --output datos_procesados.csv --no-combine
+```
+
+## Salidas
+1. **CSV con datos procesados**: Contiene los datos validados, con tipos corregidos y filas incompletas eliminadas
+2. **Archivo JSON con metadatos**: Incluye estadísticas y distribución de valores por columna (generado automáticamente si no se especifica ruta)
+
+## Funcionalidad
+- Validación y corrección automática de nombres de columnas
+- Conversión de tipos de datos
+- Manejo de valores no válidos y missing
+- Eliminación de filas incompletas
+- Combinación opcional de múltiples archivos
+- Generación de estadísticas y metadatos
+
+# Documentación de `model-training.py`
+
+## Descripción
+Script para entrenar y evaluar modelos de predicción de diabetes usando Naive Bayes, con manejo de desbalance de clases, selección de características y generación de métricas detalladas.
+
+## Uso básico
+```bash
+python model-training.py --input datos_procesados.csv --output-dir ./models
+```
+
+## Argumentos
+
+| Argumento | Abreviación | Descripción | Requerido | Valor predeterminado |
+|-----------|-------------|-------------|-----------|----------------------|
+| `--input` | `-i` | Ruta al archivo CSV con datos de entrenamiento | Sí | - |
+| `--output-dir` | `-o` | Directorio para guardar modelo y resultados | No | `./models` |
+| `--model-name` | `-n` | Nombre base para el modelo | No | `diabetes_model` |
+| `--model-type` | `-t` | Tipo de modelo Naive Bayes | No | `gaussian` |
+| `--balance-method` | `-b` | Método para manejar desbalance | No | `smote` |
+| `--feature-selection` | `-f` | Activar selección de características | No | `False` |
+| `--num-features` | `-k` | Número de características a seleccionar | No | `10` |
+| `--test-size` | `-s` | Proporción de datos para prueba | No | `0.2` |
+| `--no-scale` | - | No escalar características | No | `False` |
+
+## Opciones específicas
+
+### Tipos de modelo (`--model-type`)
+- `gaussian`: GaussianNB (adecuado para variables continuas)
+- `multinomial`: MultinomialNB (adecuado para conteos)
+- `bernoulli`: BernoulliNB (adecuado para datos binarios)
+
+### Métodos de balance (`--balance-method`)
+- `smote`: Aplica SMOTE para sobremuestrear clases minoritarias
+- `class_weight`: Usa pesos de clase para ajustar la importancia
+- `none`: No aplica corrección de desbalance
+
+## Ejemplos de uso
+
+### Entrenamiento básico
+```bash
+python model-training.py --input datos_procesados.csv
+```
+
+### Especificar tipo de modelo
+```bash
+python model-training.py --input datos_procesados.csv --model-type bernoulli
+```
+
+### Activar selección de características
+```bash
+python model-training.py --input datos_procesados.csv --feature-selection --num-features 8
+```
+
+### Cambiar método de balance de clases
+```bash
+python model-training.py --input datos_procesados.csv --balance-method class_weight
+```
+
+### Entrenar sin escalar datos
+```bash
+python model-training.py --input datos_procesados.csv --no-scale
+```
+
+### Configuración personalizada completa
+```bash
+python model-training.py --input datos_procesados.csv --output-dir ./mis_modelos \
+                        --model-name diabetes_nb --model-type multinomial \
+                        --balance-method smote --feature-selection --num-features 6 \
+                        --test-size 0.25
+```
+
+## Salidas
+
+El script genera los siguientes archivos en el directorio de salida:
+
+1. **Modelo entrenado**: `[model_name].pkl`
+2. **Scaler** (si se usa): `[model_name]_scaler.pkl` 
+3. **Metadatos**: `[model_name]_metadata.json`
+4. **Visualizaciones**:
+   - Matriz de confusión: `[model_name]_confusion_matrix.png`
+   - Curvas ROC: `[model_name]_roc_curves.png`
+   - Importancia de características: `[model_name]_feature_importance.png`
+   - Distribución de probabilidades: `[model_name]_probability_distribution.png`
+
+## Funcionalidad
+
+- Carga y preprocesamiento de datos
+- Escalado de características
+- Selección de las k mejores características
+- Manejo de desbalance de clases mediante SMOTE o pesos
+- Entrenamiento de modelos Naive Bayes (Gaussian, Multinomial, Bernoulli)
+- Validación cruzada
+- Métricas detalladas de rendimiento (accuracy, precision, recall, f1, AUC)
+- Visualizaciones de resultados
+- Guardado de modelo, scaler y metadatos
