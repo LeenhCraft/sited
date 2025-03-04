@@ -18,6 +18,7 @@ use App\Controllers\Chio\EspecialidadController;
 use App\Controllers\Chio\PacientesController;
 use App\Controllers\Chio\PersonalController;
 use App\Controllers\Chio\PreguntasController;
+use App\Controllers\Chio\TestController;
 use App\Controllers\Login\LoginController;
 use App\Controllers\Login\LogoutController;
 
@@ -164,5 +165,14 @@ $app->group('/admin', function (RouteCollectorProxy $group) {
         $group->get('/obtener/{id}', PreguntasController::class . ':obtener');
         $group->post('/actualizar/{id}', PreguntasController::class . ':actualizar');
         $group->post('/eliminar/{id}', PreguntasController::class . ':eliminar');
+    })->add(PermissionMiddleware::class);
+
+    $group->group('/diagnosticos', function (RouteCollectorProxy $group) {
+        $group->get('', TestController::class . ':index');
+        $group->get('/obtener-preguntas', TestController::class . ':obtenerPreguntas');
+        $group->post('/guardar-respuestas', TestController::class . ':guardarRespuestas');
+
+        // Nueva ruta para búsqueda de pacientes (AJAX)
+        $group->get('/buscar-pacientes', TestController::class . ':buscarPacientes');
     })->add(PermissionMiddleware::class);
 })->add(new LoginAdminMiddleware());

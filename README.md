@@ -39,6 +39,7 @@ INSERT INTO `sis_personal` (`idpersona`, `per_dni`, `per_nombre`, `per_celular`,
 -- Limpiar tablas
 TRUNCATE TABLE pr_preguntas;
 TRUNCATE TABLE pr_respuestas;
+TRUNCATE TABLE pr_tipo_respuestas;
 
 -- Insertar datos en pr_tipo_respuestas
 INSERT INTO pr_tipo_respuestas (nombre, descripcion, metadatos_requeridos, creado_por) VALUES
@@ -80,4 +81,11 @@ INSERT INTO pr_respuestas (id_pregunta, id_usuario, id_tipo_respuesta, contenido
 (10, 11, 7, 'A veces', 'Nivel moderado', '{"opciones": ["Casi Nunca", "A veces", "Casi Siempre"], "valores": [0, 1, 2], "seleccionada": 1, "valor_seleccionado": 1}', TRUE),
 (10, 12, 7, 'Casi Siempre', 'Nivel alto', '{"opciones": ["Casi Nunca", "A veces", "Casi Siempre"], "valores": [0, 1, 2], "seleccionada": 2, "valor_seleccionado": 2}', TRUE),
 (10, 13, 7, 'Casi Nunca', 'Nivel bajo', '{"opciones": ["Casi Nunca", "A veces", "Casi Siempre"], "valores": [0, 1, 2], "seleccionada": 0, "valor_seleccionado": 0}', TRUE);
+```
+
+### Limpiar tablas relacionadas al test
+
+```sql
+TRUNCATE TABLE sd_test_preguntas;
+TRUNCATE TABLE sd_test;
 ```
