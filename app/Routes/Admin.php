@@ -15,6 +15,7 @@ use App\Controllers\Admin\RolesController;
 use App\Controllers\Admin\SubMenusController;
 use App\Controllers\Admin\UsuariosController;
 use App\Controllers\Chio\EspecialidadController;
+use App\Controllers\Chio\IaController;
 use App\Controllers\Chio\PacientesController;
 use App\Controllers\Chio\PersonalController;
 use App\Controllers\Chio\PreguntasController;
@@ -165,6 +166,10 @@ $app->group('/admin', function (RouteCollectorProxy $group) {
         $group->get('/obtener/{id}', PreguntasController::class . ':obtener');
         $group->post('/actualizar/{id}', PreguntasController::class . ':actualizar');
         $group->post('/eliminar/{id}', PreguntasController::class . ':eliminar');
+    })->add(PermissionMiddleware::class);
+
+    $group->group('/modelo-ia', function (RouteCollectorProxy $group) {
+        $group->get('', IaController::class . ':index');
     })->add(PermissionMiddleware::class);
 
     $group->group('/diagnosticos', function (RouteCollectorProxy $group) {
