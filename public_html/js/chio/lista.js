@@ -59,18 +59,18 @@ const TestList = {
           },
         },
         {
-          data: "tendencia_modelo",
+          data: "tendencia_label",
+          className: "text-center",
           render: function (data) {
-            const tendencia = parseFloat(data);
-            let badgeClass = "badge-success";
+            let badgeClass = "bg-label-success";
             let text = "Bajo";
 
-            if (tendencia >= 60) {
-              badgeClass = "badge-danger";
-              text = "Alto";
-            } else if (tendencia >= 40) {
-              badgeClass = "badge-warning";
+            if (data === "Moderado") {
+              badgeClass = "bg-label-warning";
               text = "Moderado";
+            } else if (data === "Alto") {
+              badgeClass = "bg-label-danger";
+              text = "Alto";
             }
 
             return `<span class="badge ${badgeClass}">${text}</span>`;
@@ -81,15 +81,14 @@ const TestList = {
           orderable: false,
           render: function (data) {
             return `
-                            <div class="btn-group">
-                                <button type="button" class="btn btn-primary btn-sm btn-view-test" data-id="${data.idtest}">
-                                    <i class="bx bx-search-alt"></i>
-                                </button>
-                                <button type="button" class="btn btn-info btn-sm btn-print-test" data-id="${data.idtest}">
-                                    <i class="bx bx-printer"></i>
-                                </button>
-                            </div>
-                        `;
+            <div class="btn-group">
+                <button type="button" class="btn btn-primary btn-sm btn-view-test" data-id="${data.idtest}">
+                    <i class="bx bx-search-alt"></i>
+                </button>
+                <button type="button" class="btn btn-info btn-sm btn-print-test" data-id="${data.idtest}">
+                    <i class="bx bx-printer"></i>
+                </button>
+            </div>`;
           },
         },
       ],
@@ -762,14 +761,14 @@ const TestList = {
       const metadata = JSON.parse(pregunta.respuesta_metadata);
       const nivel = metadata.valor_seleccionado;
 
-      let nivelClass = "badge-success";
+      let nivelClass = "bg-label-success";
       let nivelText = "Bajo";
 
       if (nivel === 2) {
-        nivelClass = "badge-danger";
+        nivelClass = "bg-label-danger";
         nivelText = "Alto";
       } else if (nivel === 1) {
-        nivelClass = "badge-warning";
+        nivelClass = "bg-label-warning";
         nivelText = "Medio";
       }
 
@@ -778,7 +777,7 @@ const TestList = {
                     <td>${index + 1}</td>
                     <td>${pregunta.titulo}</td>
                     <td>${pregunta.respuesta_usuario}</td>
-                    <td><span class="badge ${nivelClass}">${nivelText}</span></td>
+                    <td><span class="text-center badge ${nivelClass}">${nivelText}</span></td>
                 </tr>
             `);
     });
