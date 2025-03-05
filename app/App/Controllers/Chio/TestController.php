@@ -130,6 +130,7 @@ class TestController extends Controller
                 'altura' => $pacienteData['altura'],
                 'imc' => $pacienteData['imc'],
                 'fecha_hora' => date('Y-m-d H:i:s'),
+                'tendencia_label' => "",
                 'tendencia_modelo' => 'manual', // Por ahora es manual
                 'procesado_modelo' => 0,
                 'creado_por' => $idUsuario

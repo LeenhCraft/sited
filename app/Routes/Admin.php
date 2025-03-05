@@ -15,7 +15,7 @@ use App\Controllers\Admin\RolesController;
 use App\Controllers\Admin\SubMenusController;
 use App\Controllers\Admin\UsuariosController;
 use App\Controllers\Chio\EspecialidadController;
-use App\Controllers\Chio\IaController;
+use App\Controllers\Chio\ListaTestController;
 use App\Controllers\Chio\PacientesController;
 use App\Controllers\Chio\PersonalController;
 use App\Controllers\Chio\PreguntasController;
@@ -168,8 +168,13 @@ $app->group('/admin', function (RouteCollectorProxy $group) {
         $group->post('/eliminar/{id}', PreguntasController::class . ':eliminar');
     })->add(PermissionMiddleware::class);
 
-    $group->group('/modelo-ia', function (RouteCollectorProxy $group) {
-        $group->get('', IaController::class . ':index');
+    $group->group('/lista-test', function (RouteCollectorProxy $group) {
+        $group->get('', ListaTestController::class . ':index');
+        $group->post('', ListaTestController::class . ':getTests');
+        $group->get('/get-test-details/{id}', ListaTestController::class . ':getTestDetails');
+        $group->get('/print/{id}', ListaTestController::class . ':printTest');
+        $group->get('/export/excel', ListaTestController::class . ':exportExcel');
+        $group->get('/export/pdf', ListaTestController::class . ':exportPdf');
     })->add(PermissionMiddleware::class);
 
     $group->group('/diagnosticos', function (RouteCollectorProxy $group) {

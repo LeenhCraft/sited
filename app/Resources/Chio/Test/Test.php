@@ -5,7 +5,7 @@ $permissions = $data["permission"];
 
 <div class="content-wrapper">
     <div class="content-header">
-        <div class="container-fluid">
+        <div class="container-fluid p-0">
             <div class="row mb-2">
                 <div class="col-sm-6">
                     <h1 class="m-0">Test de Diabetes</h1>
@@ -15,7 +15,7 @@ $permissions = $data["permission"];
     </div>
 
     <div class="content">
-        <div class="container-fluid">
+        <div class="container-fluid p-0">
             <!-- Flujo del Test -->
             <div class="row mb-4">
                 <div class="col-12">
@@ -132,8 +132,8 @@ $permissions = $data["permission"];
                                             </div>
                                             <div class="col-md-4">
                                                 <div class="form-group">
-                                                    <label for="altura">Altura (m):</label>
-                                                    <input type="number" class="form-control" id="altura" step="0.01" min="0.5" max="2.5" required>
+                                                    <label for="altura">Altura (cm):</label>
+                                                    <input type="number" class="form-control" id="altura" step="0.1" min="0" max="300" required>
                                                     <small class="form-text text-muted">Última altura registrada: <span id="ultima-altura">No disponible</span></small>
                                                 </div>
                                             </div>
@@ -259,7 +259,7 @@ $permissions = $data["permission"];
                                 </div>
                                 <div class="col-md-6 text-md-right text-center mt-3 mt-md-0">
                                     <button type="button" id="btn-reiniciar" class="btn btn-primary">
-                                        <i class="fas fa-redo ms-2"></i> Realizar nuevo test
+                                        <i class="fas fa-redo me-2"></i> Realizar nuevo test
                                     </button>
                                 </div>
                             </div>

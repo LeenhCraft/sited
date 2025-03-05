@@ -221,11 +221,14 @@
       const altura = parseFloat(alturaInput.value);
 
       if (peso > 0 && altura > 0) {
-        const imc = peso / (altura * altura);
+        // Convertir altura de cm a m si es necesario
+        const alturaEnMetros = altura > 3 ? altura / 100 : altura;
+
+        const imc = peso / (alturaEnMetros * alturaEnMetros);
 
         // Guardar los valores
         datosPaciente.peso = peso;
-        datosPaciente.altura = altura;
+        datosPaciente.altura = alturaEnMetros;
         datosPaciente.imc = imc;
 
         // Actualizar interfaz
@@ -609,46 +612,73 @@
    */
   function mostrarResultados(resultadoData) {
     console.log(resultadoData);
-    
-    // Si no hay datos de resultado, calcular localmente
-    if (!resultadoData) {
-      resultadoData = {
-        puntuacion: calcularPuntuacion(),
-        id_test: "local-" + Date.now(),
-      };
+
+    // Si no hay datos de resultado, mostrar error
+    if (!resultadoData || !resultadoData.analisis) {
+      Swal.fire({
+        title: "Error",
+        text: "No se pudieron obtener los resultados del test.",
+        icon: "error",
+      });
+      return;
     }
 
-    const totalPuntos = resultadoData.puntuacion || calcularPuntuacion();
-    let nivelRiesgo, mensaje, color, porcentajeRiesgo;
+    // Obtener análisis y probabilidades
+    const analisis = resultadoData.analisis;
+    const probabilidades = analisis.probabilidades;
 
-    console.log("Total puntos:", totalPuntos);
-    
+    // Determinar el nivel de riesgo basado en las probabilidades
+    let nivelRiesgo, mensaje, color, porcentajeRiesgo, recomendaciones;
 
-    if (totalPuntos <= 7) {
-      nivelRiesgo = "Bajo";
-      mensaje =
-        "Tu riesgo de desarrollar diabetes es bajo. Mantén un estilo de vida saludable.";
-      color = "success";
-      porcentajeRiesgo = Math.round((totalPuntos / 7) * 33); // 33% máximo para riesgo bajo
-    } else if (totalPuntos <= 14) {
-      nivelRiesgo = "Moderado";
-      mensaje =
-        "Tu riesgo de desarrollar diabetes es moderado. Considera revisar tu dieta y aumentar tu actividad física.";
-      color = "warning";
-      porcentajeRiesgo = 33 + Math.round(((totalPuntos - 7) / 7) * 33); // 33%-66% para riesgo moderado
+    // Caso de empate (si hay probabilidades iguales)
+    if (analisis.clasificacion.includes("/")) {
+      // En caso de empate, tomamos el nivel más alto por seguridad
+      const niveles = analisis.clasificacion.split("/");
+      nivelRiesgo = niveles[niveles.length - 1]; // Tomamos el último (asumiendo que está ordenado de menor a mayor riesgo)
+
+      // Mensaje especial para empate
+      mensaje = `Tu evaluación muestra un riesgo compartido entre niveles ${analisis.clasificacion}. Por precaución, consideramos el nivel más alto.`;
+
+      // Determinar color y porcentaje según el nivel más alto
+      if (nivelRiesgo === "Alto") {
+        color = "danger";
+        porcentajeRiesgo = probabilidades.alto;
+        recomendaciones = analisis.recomendaciones.alto;
+      } else if (nivelRiesgo === "Moderado") {
+        color = "warning";
+        porcentajeRiesgo = probabilidades.moderado;
+        recomendaciones = analisis.recomendaciones.moderado;
+      } else {
+        nivelRiesgo = "Bajo";
+        color = "success";
+        porcentajeRiesgo = probabilidades.bajo;
+        recomendaciones = analisis.recomendaciones.bajo;
+      }
     } else {
-      nivelRiesgo = "Alto";
-      mensaje =
-        "Tu riesgo de desarrollar diabetes es alto. Te recomendamos consultar con un profesional de la salud.";
-      color = "danger";
-      porcentajeRiesgo = 66 + Math.round(((totalPuntos - 14) / 8) * 34); // 66%-100% para riesgo alto
+      // Caso sin empate
+      nivelRiesgo = analisis.clasificacion;
+
+      if (nivelRiesgo === "Bajo") {
+        mensaje =
+          "Tu riesgo de desarrollar diabetes es bajo. Mantén un estilo de vida saludable.";
+        color = "success";
+        porcentajeRiesgo = probabilidades.bajo;
+        recomendaciones = analisis.recomendaciones.bajo;
+      } else if (nivelRiesgo === "Moderado") {
+        mensaje =
+          "Tu riesgo de desarrollar diabetes es moderado. Considera revisar tu dieta y aumentar tu actividad física.";
+        color = "warning";
+        porcentajeRiesgo = probabilidades.moderado;
+        recomendaciones = analisis.recomendaciones.moderado;
+      } else {
+        nivelRiesgo = "Alto";
+        mensaje =
+          "Tu riesgo de desarrollar diabetes es alto. Te recomendamos consultar con un profesional de la salud.";
+        color = "danger";
+        porcentajeRiesgo = probabilidades.alto;
+        recomendaciones = analisis.recomendaciones.alto;
+      }
     }
-
-    // Limitar a 100%
-    porcentajeRiesgo = Math.min(porcentajeRiesgo, 100);
-
-    // Mostrar en el modal
-    const resultadoContenido = document.getElementById("resultado-contenido");
 
     // Formatear la fecha actual
     const ahora = new Date();
@@ -658,164 +688,180 @@
       year: "numeric",
     });
 
+    // Crear HTML para las recomendaciones
+    let recomendacionesHTML = "";
+    if (recomendaciones && recomendaciones.length) {
+      recomendacionesHTML =
+        '<div class="mt-3"><strong>Recomendaciones:</strong><ul>';
+      recomendaciones.forEach((rec) => {
+        recomendacionesHTML += `<li>${rec}</li>`;
+      });
+      recomendacionesHTML += "</ul></div>";
+    }
+
+    // Mostrar en el modal
+    const resultadoContenido = document.getElementById("resultado-contenido");
+
     resultadoContenido.innerHTML = `
-      <div class="row mb-4">
-        <div class="col-md-6">
-          <h5>Datos del Paciente</h5>
-          <table class="table table-bordered">
-            <tbody>
-              <tr>
-                <th scope="row">Nombre:</th>
-                <td>${pacienteSeleccionado.nombre}</td>
-              </tr>
-              <tr>
-                <th scope="row">DNI:</th>
-                <td>${pacienteSeleccionado.dni}</td>
-              </tr>
-              <tr>
-                <th scope="row">Edad:</th>
-                <td>${pacienteSeleccionado.edad} años</td>
-              </tr>
-              <tr>
-                <th scope="row">Sexo:</th>
-                <td>${pacienteSeleccionado.sexo}</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-        <div class="col-md-6">
-          <h5>Datos Antropométricos</h5>
-          <table class="table table-bordered">
-            <tbody>
-              <tr>
-                <th scope="row">Peso:</th>
-                <td>${datosPaciente.peso} kg</td>
-              </tr>
-              <tr>
-                <th scope="row">Altura:</th>
-                <td>${datosPaciente.altura} m</td>
-              </tr>
-              <tr>
-                <th scope="row">IMC:</th>
-                <td>${datosPaciente.imc.toFixed(1)}</td>
-              </tr>
-              <tr>
-                <th scope="row">Fecha del test:</th>
-                <td>${fechaFormateada}</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
+    <div class="row mb-4">
+      <div class="col-md-6">
+        <h5>Datos del Paciente</h5>
+        <table class="table table-bordered">
+          <tbody>
+            <tr>
+              <th scope="row">Nombre:</th>
+              <td>${pacienteSeleccionado.nombre}</td>
+            </tr>
+            <tr>
+              <th scope="row">DNI:</th>
+              <td>${pacienteSeleccionado.dni}</td>
+            </tr>
+            <tr>
+              <th scope="row">Edad:</th>
+              <td>${pacienteSeleccionado.edad} años</td>
+            </tr>
+            <tr>
+              <th scope="row">Sexo:</th>
+              <td>${pacienteSeleccionado.sexo}</td>
+            </tr>
+          </tbody>
+        </table>
       </div>
-      
-      <div class="row">
-        <div class="col-md-5">
-          <div class="card border-${color} mb-4">
-            <div class="card-header bg-${color} text-white">
-              <h5 class="card-title mb-0">Resultado: Riesgo ${nivelRiesgo}</h5>
-            </div>
-            <div class="card-body">
-              <div class="text-center mb-3">
-                <div class="result-gauge">
-                  <div class="gauge-value display-4">${porcentajeRiesgo}%</div>
-                  <div class="progress mt-2" style="height: 25px;">
-                    <div class="progress-bar bg-${color}" role="progressbar" style="width: ${porcentajeRiesgo}%;" 
-                      aria-valuenow="${porcentajeRiesgo}" aria-valuemin="0" aria-valuemax="100">
-                    </div>
+      <div class="col-md-6">
+        <h5>Datos Antropométricos</h5>
+        <table class="table table-bordered">
+          <tbody>
+            <tr>
+              <th scope="row">Peso:</th>
+              <td>${datosPaciente.peso} kg</td>
+            </tr>
+            <tr>
+              <th scope="row">Altura:</th>
+              <td>${datosPaciente.altura} m</td>
+            </tr>
+            <tr>
+              <th scope="row">IMC:</th>
+              <td>${datosPaciente.imc.toFixed(1)}</td>
+            </tr>
+            <tr>
+              <th scope="row">Fecha del test:</th>
+              <td>${fechaFormateada}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    
+    <div class="row">
+      <div class="col-md-5">
+        <div class="card border-${color} mb-4">
+          <div class="card-header bg-${color} text-white">
+            <h5 class="card-title text-white fw-bold mb-0">Resultado: Riesgo ${nivelRiesgo}</h5>
+          </div>
+          <div class="card-body py-4">
+            <div class="text-center mb-3">
+              <div class="result-gauge">
+                <div class="gauge-value display-4">${Math.round(
+                  porcentajeRiesgo
+                )}%</div>
+                <div class="progress mt-2" style="height: 25px;">
+                  <div class="progress-bar bg-${color}" role="progressbar" style="width: ${porcentajeRiesgo}%;" 
+                    aria-valuenow="${porcentajeRiesgo}" aria-valuemin="0" aria-valuemax="100">
                   </div>
                 </div>
               </div>
-              <p class="lead">${mensaje}</p>
-              <div class="small text-muted mt-3">
-                <strong>Puntuación:</strong> ${totalPuntos} puntos de un máximo de 22
-              </div>
             </div>
-          </div>
-          <div class="card mb-4">
-            <div class="card-header bg-light">
-              <h5 class="card-title mb-0">Gráfico de Riesgo</h5>
-            </div>
-            <div class="card-body">
-              <div id="chartContainer" style="height: 250px;" class="mb-3"></div>
-              <div class="small text-muted text-center">
-                El gráfico muestra factores de riesgo significativos de acuerdo a las respuestas
-              </div>
+            <p class="lead">${mensaje}</p>
+            ${recomendacionesHTML}
+            <div class="small text-muted mt-3">
+              <strong>Análisis:</strong> Bajo: ${Math.round(
+                probabilidades.bajo
+              )}%, 
+              Moderado: ${Math.round(probabilidades.moderado)}%, 
+              Alto: ${Math.round(probabilidades.alto)}%
             </div>
           </div>
         </div>
-        
-        <div class="col-md-7">
-          <div class="card">
-            <div class="card-header bg-light">
-              <h5 class="card-title mb-0">Resumen de Respuestas</h5>
-            </div>
-            <div class="card-body">
-              <div class="table-responsive">
-                <table class="table table-striped table-hover">
-                  <thead>
-                    <tr>
-                      <th>Pregunta</th>
-                      <th>Respuesta</th>
-                      <th class="text-center">Valor</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    ${generarResumenRespuestas()}
-                  </tbody>
-                </table>
-              </div>
+        <div class="card mb-4">
+          <div class="card-header bg-light">
+            <h5 class="card-title mb-0">Gráfico de Riesgo</h5>
+          </div>
+          <div class="card-body">
+            <div id="chartContainer" style="height: 250px;" class="mb-3"></div>
+            <div class="small text-muted text-center">
+              El gráfico muestra factores de riesgo significativos de acuerdo a las respuestas
             </div>
           </div>
         </div>
       </div>
       
-      <div class="alert alert-info mt-3">
-        <i class="fas fa-info-circle mr-2"></i>
-        Este test es informativo y no reemplaza el diagnóstico médico profesional. Si tiene preocupaciones sobre su salud, consulte con un médico.
+      <div class="col-md-7">
+        <div class="card">
+          <div class="card-header bg-light">
+            <h5 class="card-title mb-0">Resumen de Respuestas</h5>
+          </div>
+          <div class="card-body">
+            <div class="table-responsive">
+              <table class="table table-striped table-hover">
+                <thead>
+                  <tr>
+                    <th>Pregunta</th>
+                    <th>Respuesta</th>
+                    <th class="text-center">Valor</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${generarResumenRespuestas()}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
       </div>
-    `;
+    </div>
+    
+    <div class="alert alert-info mt-3">
+      <i class="fas fa-info-circle mr-2"></i>
+      Este test es informativo y no reemplaza el diagnóstico médico profesional. Si tiene preocupaciones sobre su salud, consulte con un médico.
+    </div>
+  `;
 
     // Inicializar el gráfico después de que el DOM esté listo
-    setTimeout(renderizarGrafico, 100);
+    setTimeout(() => {
+      renderizarGrafico(resultadoData);
+    }, 100);
   }
 
   /**
-   * Renderiza el gráfico de factores de riesgo
+   * Renderiza el gráfico de probabilidades
    */
-  function renderizarGrafico() {
-    // Analizar respuestas para encontrar los factores de mayor riesgo
-    const factoresRiesgo = [];
+  function renderizarGrafico(resultadoData) {
+    // Si no hay datos de análisis, salir
+    if (
+      !resultadoData ||
+      !resultadoData.analisis ||
+      !resultadoData.analisis.probabilidades
+    ) {
+      console.error("No hay datos de análisis para renderizar el gráfico");
+      return;
+    }
 
-    preguntas.forEach((pregunta) => {
-      if (respuestasUsuario[pregunta.id_pregunta]) {
-        const respuestaId = respuestasUsuario[pregunta.id_pregunta];
-        const respuesta = pregunta.respuestas.find(
-          (r) => r.id_respuesta == respuestaId
-        );
+    const probabilidades = resultadoData.analisis.probabilidades;
 
-        if (
-          respuesta &&
-          respuesta.metadatos &&
-          respuesta.metadatos.valor_seleccionado > 0
-        ) {
-          factoresRiesgo.push({
-            factor: pregunta.titulo,
-            valor: respuesta.metadatos.valor_seleccionado,
-          });
-        }
-      }
-    });
+    // Preparar datos para el gráfico
+    const labels = ["Bajo", "Moderado", "Alto"];
+    const data = [
+      probabilidades.bajo,
+      probabilidades.moderado,
+      probabilidades.alto,
+    ];
 
-    // Ordenar por valor descendente y tomar los 5 principales
-    factoresRiesgo.sort((a, b) => b.valor - a.valor);
-    const principalesFactores = factoresRiesgo.slice(0, 5);
-
-    // Crear datos para el gráfico
-    const labels = principalesFactores.map((item) =>
-      abreviarTexto(item.factor, 30)
-    );
-    const data = principalesFactores.map((item) => item.valor);
-    const colores = obtenerColoresSegunValor(data);
+    // Determinar colores para cada nivel
+    const colores = [
+      "rgba(40, 167, 69, 0.7)", // Verde para bajo
+      "rgba(255, 193, 7, 0.7)", // Amarillo para moderado
+      "rgba(220, 53, 69, 0.7)", // Rojo para alto
+    ];
 
     // Obtener el elemento canvas
     const container = document.getElementById("chartContainer");
@@ -830,29 +876,61 @@
         labels: labels,
         datasets: [
           {
-            label: "Nivel de riesgo",
+            label: "Probabilidad (%)",
             data: data,
             backgroundColor: colores,
             borderColor: colores.map((color) => color.replace("0.7", "1")),
             borderWidth: 1,
+          },
+          {
+            label: "Tendencia",
+            data: data,
+            type: "line",
+            borderColor: "rgba(0, 0, 0, 0.8)",
+            backgroundColor: "transparent",
+            pointBackgroundColor: "rgba(0, 0, 0, 0.8)",
+            tension: 0.4,
+            borderWidth: 2,
           },
         ],
       },
       options: {
         responsive: true,
         maintainAspectRatio: false,
-        scales: {
-          y: {
-            beginAtZero: true,
-            max: 3,
-            ticks: {
-              stepSize: 1,
+        plugins: {
+          title: {
+            display: true,
+            text: "Tendencia más probable",
+            font: {
+              size: 14,
+              weight: "bold",
+            },
+          },
+          legend: {
+            display: true,
+            position: "top",
+            labels: {
+              filter: function (item) {
+                // Ocultar la etiqueta para el dataset de barras
+                return item.text !== "Probabilidad (%)";
+              },
             },
           },
         },
-        plugins: {
-          legend: {
-            display: false,
+        scales: {
+          y: {
+            beginAtZero: true,
+            max: Math.max(...data) * 1.2, // 10% más alto que el valor máximo
+            title: {
+              display: true,
+              text: "Probabilidad (%)",
+            },
+          },
+          x: {
+            title: {
+              display: true,
+              text: "Nivel de Riesgo",
+            },
           },
         },
       },
@@ -919,35 +997,6 @@
     }
 
     return html;
-  }
-
-  /**
-   * Calcula la puntuación total del test
-   */
-  function calcularPuntuacion() {
-    let puntuacion = 0;
-
-    // Recorremos todas las respuestas
-    for (const preguntaId in respuestasUsuario) {
-      const respuestaId = respuestasUsuario[preguntaId];
-
-      // Buscar la pregunta y respuesta correspondiente
-      const pregunta = preguntas.find((p) => p.id_pregunta == preguntaId);
-      if (pregunta) {
-        const respuesta = pregunta.respuestas.find(
-          (r) => r.id_respuesta == respuestaId
-        );
-        if (
-          respuesta &&
-          respuesta.metadatos &&
-          respuesta.metadatos.valor_seleccionado !== undefined
-        ) {
-          puntuacion += respuesta.metadatos.valor_seleccionado;
-        }
-      }
-    }
-
-    return puntuacion;
   }
 
   /**
