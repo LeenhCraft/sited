@@ -50,12 +50,12 @@ $permissions = $data["permission"];
                             </div>
                         </div>
                         <div class="col-md-3 d-flex align-items-end">
-                            <button type="button" id="btn-filter" class="btn btn-primary mr-2">
+                            <button type="button" id="btn-filter" class="btn btn-primary me-2">
                                 <i class="bx bx-filter-alt"></i> Filtrar
                             </button>
                             <?php if (isset($permisos[$permissions]["print"]) && $permisos[$permissions]["print"]) : ?>
                                 <div class="dropdown">
-                                    <button class="btn btn-success dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                    <button class="btn btn-success dropdown-toggle" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                         <i class="bx bx-export"></i> Exportar
                                     </button>
                                     <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">

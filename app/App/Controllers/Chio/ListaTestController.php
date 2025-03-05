@@ -341,14 +341,16 @@ class ListaTestController extends Controller
             }
 
             // Determinar nivel de riesgo
-            $tendencia = floatval($test['tendencia_modelo']);
-            $riesgo = 'Bajo';
+            /* $tendencia = floatval($test['tendencia_modelo']);
+            $riesgo = 'Bajo'; */
 
-            if ($tendencia >= 60) {
-                $riesgo = 'Alto';
-            } else if ($tendencia >= 40) {
-                $riesgo = 'Moderado';
-            }
+            // if ($tendencia >= 60) {
+            //     $riesgo = 'Alto';
+            // } else if ($tendencia >= 40) {
+            //     $riesgo = 'Moderado';
+            // }
+
+            $riesgo = $test["tendencia_label"];
 
             // Datos para esta fila
             $data = [
@@ -496,15 +498,24 @@ class ListaTestController extends Controller
             }
 
             // Determinar nivel de riesgo
-            $tendencia = floatval($test['tendencia_modelo']);
+            /* $tendencia = floatval($test['tendencia_modelo']);
             $riesgo = 'Bajo';
-            $riesgoClass = 'nivel-bajo';
+            $riesgoClass = 'nivel-bajo'; */
 
-            if ($tendencia >= 60) {
+            /* if ($tendencia >= 60) {
                 $riesgo = 'Alto';
                 $riesgoClass = 'nivel-alto';
             } else if ($tendencia >= 40) {
                 $riesgo = 'Moderado';
+                $riesgoClass = 'nivel-medio';
+            } */
+
+            $riesgo = $test["tendencia_label"];
+            $riesgoClass = 'nivel-bajo';
+
+            if ($riesgo === 'Alto') {
+                $riesgoClass = 'nivel-alto';
+            } else if ($riesgo === 'Moderado') {
                 $riesgoClass = 'nivel-medio';
             }
 
@@ -533,11 +544,21 @@ class ListaTestController extends Controller
         $riesgoAlto = 0;
 
         foreach ($filteredTests as $test) {
-            $tendencia = floatval($test['tendencia_modelo']);
+            /* $tendencia = floatval($test['tendencia_modelo']);
 
             if ($tendencia >= 60) {
                 $riesgoAlto++;
             } else if ($tendencia >= 40) {
+                $riesgoModerado++;
+            } else {
+                $riesgoBajo++;
+            } */
+
+            $riesgo = $test["tendencia_label"];
+
+            if ($riesgo === 'Alto') {
+                $riesgoAlto++;
+            } else if ($riesgo === 'Moderado') {
                 $riesgoModerado++;
             } else {
                 $riesgoBajo++;
