@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Servidor: localhost:3306
--- Tiempo de generación: 04-03-2025 a las 20:44:45
+-- Tiempo de generación: 05-03-2025 a las 02:35:35
 -- Versión del servidor: 8.0.30
 -- Versión de PHP: 8.1.10
 
@@ -219,7 +219,8 @@ CREATE TABLE `sd_pacientes` (
 --
 
 INSERT INTO `sd_pacientes` (`idpaciente`, `nombre`, `dni`, `celular`, `edad`, `sexo`, `peso`, `altura`, `fecha_registro`, `creado_por`, `ultima_actualizacion`, `actualizado_por`, `eliminado`, `fecha_eliminacion`, `eliminado_por`) VALUES
-(1, 'BUSTAMANTE FERNANDEZ ASHLY NAOMI', '76144151', '0', '22', '0', 55.00, 1.55, '2025-02-25 15:07:18', 0, '2025-03-04 00:08:54', 1, 0, NULL, NULL);
+(1, 'BUSTAMANTE FERNANDEZ ASHLY NAOMI', '76144151', '0', '46', '0', 75.00, 155.00, '2025-02-25 15:07:18', 0, '2025-03-04 19:44:56', 1, 0, NULL, NULL),
+(2, 'BUSTAMANTE FERNANDEZ LEENH ALEXANDER', '76144152', '987654321', '55', 'M', 90.00, 1.70, '2025-03-04 21:08:02', 1, '2025-03-04 21:33:13', 1, 0, NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -289,9 +290,10 @@ CREATE TABLE `sd_test` (
 
 CREATE TABLE `sd_test_preguntas` (
   `id_test_pregunta` int NOT NULL,
-  `id_pregunta` int NOT NULL,
   `idtest` int NOT NULL,
-  `respuesta_usuario` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `id_pregunta` int NOT NULL,
+  `id_respuesta` int DEFAULT NULL,
+  `respuesta_usuario` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `fecha_registro` datetime NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
@@ -336,6 +338,178 @@ CREATE TABLE `sis_centinela` (
   `url` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `fecha_registro` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Volcado de datos para la tabla `sis_centinela`
+--
+
+INSERT INTO `sis_centinela` (`idcentinela`, `codigo`, `ip`, `agente`, `method`, `url`, `fecha_registro`) VALUES
+(6966, 6305, ' IP: ::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36', 'GET', '/admin/login', '2025-03-04 15:51:29'),
+(6967, 6207, ' IP: ::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36', 'GET', '/img/loading.svg', '2025-03-04 15:51:29'),
+(6968, 6978, ' IP: ::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36', 'GET', '/js/popper.min.js.map', '2025-03-04 15:51:30'),
+(6969, 4924, ' IP: ::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36', 'POST', '/admin/login', '2025-03-04 15:57:28'),
+(6970, 5970, ' IP: ::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36', 'GET', '/admin/login', '2025-03-04 15:57:29'),
+(6971, 1664, ' IP: ::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36', 'GET', '/admin', '2025-03-04 15:57:29'),
+(6972, 3666, ' IP: ::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36', 'GET', '/js/popper.min.js.map', '2025-03-04 15:57:30'),
+(6973, 8312, ' IP: ::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36', 'GET', '/admin/diagnosticos', '2025-03-04 15:57:34'),
+(6974, 1339, ' IP: ::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36', 'GET', '/js/popper.min.js.map', '2025-03-04 15:57:35'),
+(6975, 4032, ' IP: ::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36', 'GET', '/admin/diagnosticos/buscar-pacientes?q=nao', '2025-03-04 16:02:23'),
+(6976, 3442, ' IP: ::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36', 'GET', '/admin/diagnosticos/obtener-preguntas', '2025-03-04 16:02:27'),
+(6977, 9719, ' IP: ::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36', 'POST', '/admin/diagnosticos/guardar-respuestas', '2025-03-04 16:09:08'),
+(6978, 5639, ' IP: ::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36', 'GET', '/admin/diagnosticos', '2025-03-04 16:13:20'),
+(6979, 3561, ' IP: ::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36', 'GET', '/js/popper.min.js.map', '2025-03-04 16:13:21'),
+(6980, 5137, ' IP: ::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36', 'GET', '/admin/diagnosticos/buscar-pacientes?q=mao', '2025-03-04 16:13:24'),
+(6981, 2014, ' IP: ::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36', 'GET', '/admin/diagnosticos/buscar-pacientes?q=nao', '2025-03-04 16:13:25'),
+(6982, 5006, ' IP: ::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36', 'GET', '/admin/diagnosticos/obtener-preguntas', '2025-03-04 16:13:29'),
+(6983, 4584, ' IP: ::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36', 'POST', '/admin/diagnosticos/guardar-respuestas', '2025-03-04 16:13:45'),
+(6984, 1161, ' IP: ::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36', 'GET', '/admin/diagnosticos', '2025-03-04 16:29:40'),
+(6985, 5268, ' IP: ::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36', 'GET', '/js/popper.min.js.map', '2025-03-04 16:29:41'),
+(6986, 3806, ' IP: ::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36', 'GET', '/admin/diagnosticos/buscar-pacientes?q=nao', '2025-03-04 16:29:44'),
+(6987, 7483, ' IP: ::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36', 'GET', '/admin/diagnosticos/obtener-preguntas', '2025-03-04 16:29:47'),
+(6988, 1906, ' IP: ::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36', 'POST', '/admin/diagnosticos/guardar-respuestas', '2025-03-04 16:30:08'),
+(6989, 2962, ' IP: ::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36', 'GET', '/admin/diagnosticos', '2025-03-04 16:52:07'),
+(6990, 9366, ' IP: ::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36', 'GET', '/js/popper.min.js.map', '2025-03-04 16:52:08'),
+(6991, 5814, ' IP: ::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36', 'GET', '/admin/diagnosticos/buscar-pacientes?q=nao', '2025-03-04 16:52:10'),
+(6992, 8430, ' IP: ::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36', 'GET', '/admin/diagnosticos/obtener-preguntas', '2025-03-04 16:54:11'),
+(6993, 7132, ' IP: ::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36', 'GET', '/js/popper.min.js.map', '2025-03-04 17:00:13'),
+(6994, 6726, ' IP: ::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36', 'POST', '/admin/diagnosticos/guardar-respuestas', '2025-03-04 17:00:21'),
+(6995, 1014, ' IP: ::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36', 'POST', '/admin/diagnosticos/guardar-respuestas', '2025-03-04 17:01:11'),
+(6996, 4453, ' IP: ::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36', 'GET', '/admin/diagnosticos', '2025-03-04 17:02:48'),
+(6997, 8046, ' IP: ::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36', 'GET', '/js/popper.min.js.map', '2025-03-04 17:02:49'),
+(6998, 1259, ' IP: ::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36', 'GET', '/admin/diagnosticos/buscar-pacientes?q=nuev', '2025-03-04 17:03:29'),
+(6999, 4092, ' IP: ::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36', 'GET', '/admin/diagnosticos/buscar-pacientes?q=nao', '2025-03-04 17:03:31'),
+(7000, 3914, ' IP: ::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36', 'GET', '/admin/diagnosticos/obtener-preguntas', '2025-03-04 17:03:50'),
+(7001, 5752, ' IP: ::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36', 'GET', '/admin/diagnosticos/buscar-pacientes?q=lee', '2025-03-04 17:03:58'),
+(7002, 5049, ' IP: ::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36', 'GET', '/admin/diagnosticos/buscar-pacientes?q=nao', '2025-03-04 17:03:59'),
+(7003, 4714, ' IP: ::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36', 'GET', '/admin/diagnosticos', '2025-03-04 17:04:08'),
+(7004, 7908, ' IP: ::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36', 'GET', '/js/popper.min.js.map', '2025-03-04 17:04:08'),
+(7005, 5415, ' IP: ::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36', 'GET', '/admin/diagnosticos/buscar-pacientes?q=nao', '2025-03-04 17:04:11'),
+(7006, 4779, ' IP: ::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36', 'GET', '/admin/diagnosticos/obtener-preguntas', '2025-03-04 17:04:17'),
+(7007, 9210, ' IP: ::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36', 'POST', '/admin/diagnosticos/guardar-respuestas', '2025-03-04 17:04:58'),
+(7008, 7434, ' IP: ::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36', 'POST', '/admin/diagnosticos/guardar-respuestas', '2025-03-04 17:05:34'),
+(7009, 5538, ' IP: ::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36', 'POST', '/admin/diagnosticos/guardar-respuestas', '2025-03-04 17:10:01'),
+(7010, 1235, ' IP: ::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36', 'POST', '/admin/diagnosticos/guardar-respuestas', '2025-03-04 17:10:59'),
+(7011, 3200, ' IP: ::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36', 'POST', '/admin/diagnosticos/guardar-respuestas', '2025-03-04 17:11:36'),
+(7012, 3999, ' IP: ::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36', 'POST', '/admin/diagnosticos/guardar-respuestas', '2025-03-04 17:12:33'),
+(7013, 3454, ' IP: ::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36', 'POST', '/admin/diagnosticos/guardar-respuestas', '2025-03-04 17:13:40'),
+(7014, 4296, ' IP: ::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36', 'POST', '/admin/diagnosticos/guardar-respuestas', '2025-03-04 17:14:30'),
+(7015, 5626, ' IP: ::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36', 'POST', '/admin/diagnosticos/guardar-respuestas', '2025-03-04 17:16:33'),
+(7016, 3127, ' IP: ::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36', 'GET', '/admin/diagnosticos', '2025-03-04 17:26:34'),
+(7017, 3728, ' IP: ::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36', 'GET', '/admin/permisos-especiales', '2025-03-04 17:26:37'),
+(7018, 6108, ' IP: ::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36', 'GET', '/css/select2-bootstrap4.min.css', '2025-03-04 17:26:37'),
+(7019, 4739, ' IP: ::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36', 'GET', '/css/select2.min.css', '2025-03-04 17:26:37'),
+(7020, 7573, ' IP: ::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36', 'GET', '/admin/permisos-especiales/getroles', '2025-03-04 17:26:38'),
+(7021, 4634, ' IP: ::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36', 'GET', '/admin/permisos-especiales/getrecursos', '2025-03-04 17:26:38'),
+(7022, 8708, ' IP: ::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36', 'GET', '/admin/permisos-especiales/getacciones', '2025-03-04 17:26:38'),
+(7023, 7264, ' IP: ::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36', 'POST', '/admin/permisos-especiales/getrecursos', '2025-03-04 17:26:38'),
+(7024, 7536, ' IP: ::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36', 'POST', '/admin/permisos-especiales/getacciones', '2025-03-04 17:26:38'),
+(7025, 2387, ' IP: ::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36', 'POST', '/admin/diagnosticos/guardar-respuestas', '2025-03-04 17:27:47'),
+(7026, 1813, ' IP: ::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36', 'POST', '/admin/diagnosticos/guardar-respuestas', '2025-03-04 17:28:07'),
+(7027, 7650, ' IP: ::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36', 'POST', '/admin/diagnosticos/guardar-respuestas', '2025-03-04 17:28:51'),
+(7028, 1665, ' IP: ::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36', 'POST', '/admin/diagnosticos/guardar-respuestas', '2025-03-04 17:29:30'),
+(7029, 1259, ' IP: ::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36', 'GET', '/admin/diagnosticos', '2025-03-04 17:30:16'),
+(7030, 4936, ' IP: ::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36', 'GET', '/js/popper.min.js.map', '2025-03-04 17:30:16'),
+(7031, 7023, ' IP: ::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36', 'GET', '/admin/diagnosticos/buscar-pacientes?q=nao', '2025-03-04 17:30:18'),
+(7032, 8474, ' IP: ::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36', 'GET', '/admin/diagnosticos/obtener-preguntas', '2025-03-04 17:30:23'),
+(7033, 3431, ' IP: ::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36', 'POST', '/admin/diagnosticos/guardar-respuestas', '2025-03-04 17:31:24'),
+(7034, 5734, ' IP: ::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36', 'GET', '/admin/login', '2025-03-04 18:35:25'),
+(7035, 6359, ' IP: ::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36', 'GET', '/img/loading.svg', '2025-03-04 18:35:26'),
+(7036, 9644, ' IP: ::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36', 'GET', '/js/popper.min.js.map', '2025-03-04 18:35:26'),
+(7037, 6631, ' IP: ::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36', 'POST', '/admin/login', '2025-03-04 18:35:27'),
+(7038, 1983, ' IP: ::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36', 'GET', '/admin/login', '2025-03-04 18:35:28'),
+(7039, 5286, ' IP: ::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36', 'GET', '/admin', '2025-03-04 18:35:28'),
+(7040, 7536, ' IP: ::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36', 'GET', '/js/popper.min.js.map', '2025-03-04 18:35:29'),
+(7041, 3659, ' IP: ::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36', 'GET', '/admin/diagnosticos', '2025-03-04 18:36:24'),
+(7042, 5523, ' IP: ::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36', 'GET', '/js/popper.min.js.map', '2025-03-04 18:36:25'),
+(7043, 7670, ' IP: ::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36', 'GET', '/admin/diagnosticos', '2025-03-04 18:56:11'),
+(7044, 4423, ' IP: ::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36', 'GET', '/js/popper.min.js.map', '2025-03-04 18:56:12'),
+(7045, 8899, ' IP: ::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36', 'GET', '/admin/diagnosticos/buscar-pacientes?q=nao', '2025-03-04 18:56:26'),
+(7046, 8541, ' IP: ::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36', 'GET', '/admin/diagnosticos/obtener-preguntas', '2025-03-04 18:56:29'),
+(7047, 4934, ' IP: ::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36', 'POST', '/admin/diagnosticos/guardar-respuestas', '2025-03-04 18:57:03'),
+(7048, 1025, ' IP: ::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36', 'POST', '/admin/diagnosticos/guardar-respuestas', '2025-03-04 18:57:58'),
+(7049, 2403, ' IP: ::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36', 'POST', '/admin/diagnosticos/guardar-respuestas', '2025-03-04 18:59:07'),
+(7050, 2282, ' IP: ::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36', 'POST', '/admin/diagnosticos/guardar-respuestas', '2025-03-04 19:03:32'),
+(7051, 4140, ' IP: ::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36', 'POST', '/admin/diagnosticos/guardar-respuestas', '2025-03-04 19:04:10'),
+(7052, 3424, ' IP: ::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36', 'POST', '/admin/diagnosticos/guardar-respuestas', '2025-03-04 19:05:48'),
+(7053, 6008, ' IP: ::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36', 'POST', '/admin/diagnosticos/guardar-respuestas', '2025-03-04 19:44:56'),
+(7054, 5207, ' IP: ::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36', 'GET', '/admin/diagnosticos', '2025-03-04 19:50:40'),
+(7055, 3123, ' IP: ::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36', 'GET', '/js/popper.min.js.map', '2025-03-04 19:50:41'),
+(7056, 1715, ' IP: ::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36', 'GET', '/admin/login', '2025-03-04 20:50:56'),
+(7057, 7376, ' IP: ::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36', 'GET', '/img/loading.svg', '2025-03-04 20:50:56'),
+(7058, 5110, ' IP: ::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36', 'GET', '/js/popper.min.js.map', '2025-03-04 20:50:56'),
+(7059, 8487, ' IP: ::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36', 'GET', '/admin/login', '2025-03-04 20:51:12'),
+(7060, 3326, ' IP: ::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36', 'GET', '/img/loading.svg', '2025-03-04 20:51:12'),
+(7061, 5791, ' IP: ::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36', 'GET', '/js/popper.min.js.map', '2025-03-04 20:51:12'),
+(7062, 9747, ' IP: ::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36', 'POST', '/admin/login', '2025-03-04 20:51:14'),
+(7063, 9976, ' IP: ::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36', 'GET', '/admin/login', '2025-03-04 20:51:15'),
+(7064, 6344, ' IP: ::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36', 'GET', '/admin', '2025-03-04 20:51:15'),
+(7065, 6460, ' IP: ::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36', 'GET', '/js/popper.min.js.map', '2025-03-04 20:51:15'),
+(7066, 1492, ' IP: ::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36', 'GET', '/admin/diagnosticos', '2025-03-04 20:52:48'),
+(7067, 1263, ' IP: ::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36', 'GET', '/js/popper.min.js.map', '2025-03-04 20:52:48'),
+(7068, 5076, ' IP: ::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36', 'GET', '/admin/diagnosticos', '2025-03-04 20:54:26'),
+(7069, 2440, ' IP: ::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36', 'GET', '/js/popper.min.js.map', '2025-03-04 20:54:27'),
+(7070, 6685, ' IP: ::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36', 'GET', '/admin/preguntas', '2025-03-04 20:54:29'),
+(7071, 7331, ' IP: ::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36', 'GET', '/js/popper.min.js.map', '2025-03-04 20:54:29'),
+(7072, 5398, ' IP: ::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36', 'POST', '/admin/preguntas/list', '2025-03-04 20:54:29'),
+(7073, 2995, ' IP: ::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36', 'GET', '/admin/preguntas/tipos-respuesta', '2025-03-04 20:54:29'),
+(7074, 4007, ' IP: ::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36', 'GET', '/admin/diagnosticos', '2025-03-04 20:54:38'),
+(7075, 8302, ' IP: ::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36', 'GET', '/js/popper.min.js.map', '2025-03-04 20:54:38'),
+(7076, 9815, ' IP: ::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36', 'GET', '/admin/diagnosticos', '2025-03-04 21:07:05'),
+(7077, 1690, ' IP: ::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36', 'GET', '/js/popper.min.js.map', '2025-03-04 21:07:06'),
+(7078, 2607, ' IP: ::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36', 'GET', '/admin/pacientes', '2025-03-04 21:07:07'),
+(7079, 2973, ' IP: ::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36', 'GET', '/js/popper.min.js.map', '2025-03-04 21:07:08'),
+(7080, 5281, ' IP: ::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36', 'POST', '/admin/pacientes', '2025-03-04 21:07:08'),
+(7081, 4355, ' IP: ::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36', 'GET', '/admin/doc/dni/76144152', '2025-03-04 21:07:13'),
+(7082, 4214, ' IP: ::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36', 'POST', '/admin/pacientes/save', '2025-03-04 21:08:02'),
+(7083, 4775, ' IP: ::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36', 'POST', '/admin/pacientes', '2025-03-04 21:08:02'),
+(7084, 5246, ' IP: ::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36', 'GET', '/admin/diagnosticos', '2025-03-04 21:08:08'),
+(7085, 1033, ' IP: ::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36', 'GET', '/js/popper.min.js.map', '2025-03-04 21:08:08'),
+(7086, 6226, ' IP: ::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36', 'GET', '/admin/diagnosticos/buscar-pacientes?q=lee', '2025-03-04 21:08:11'),
+(7087, 6023, ' IP: ::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36', 'GET', '/admin/diagnosticos/obtener-preguntas', '2025-03-04 21:10:27'),
+(7088, 9750, ' IP: ::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36', 'POST', '/admin/diagnosticos/guardar-respuestas', '2025-03-04 21:11:20'),
+(7089, 3371, ' IP: ::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36', 'POST', '/admin/diagnosticos/guardar-respuestas', '2025-03-04 21:13:20'),
+(7090, 5303, ' IP: ::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36', 'GET', '/admin/diagnosticos/obtener-preguntas', '2025-03-04 21:14:13'),
+(7091, 4451, ' IP: ::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36', 'POST', '/admin/diagnosticos/guardar-respuestas', '2025-03-04 21:14:22'),
+(7092, 9378, ' IP: ::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36', 'GET', '/admin/diagnosticos', '2025-03-04 21:14:30'),
+(7093, 2033, ' IP: ::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36', 'GET', '/js/popper.min.js.map', '2025-03-04 21:14:30'),
+(7094, 3539, ' IP: ::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36', 'GET', '/admin/diagnosticos/buscar-pacientes?q=leenh', '2025-03-04 21:14:47'),
+(7095, 7138, ' IP: ::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36', 'GET', '/admin/diagnosticos/obtener-preguntas', '2025-03-04 21:20:38'),
+(7096, 1182, ' IP: ::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36', 'POST', '/admin/diagnosticos/guardar-respuestas', '2025-03-04 21:21:58'),
+(7097, 7657, ' IP: ::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36', 'POST', '/admin/diagnosticos/guardar-respuestas', '2025-03-04 21:22:28'),
+(7098, 5421, ' IP: ::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36', 'GET', '/admin/diagnosticos', '2025-03-04 21:22:36'),
+(7099, 3786, ' IP: ::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36', 'GET', '/js/popper.min.js.map', '2025-03-04 21:22:38'),
+(7100, 2921, ' IP: ::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36', 'GET', '/admin/pacientes', '2025-03-04 21:22:53'),
+(7101, 8305, ' IP: ::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36', 'GET', '/js/popper.min.js.map', '2025-03-04 21:22:53'),
+(7102, 6474, ' IP: ::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36', 'POST', '/admin/pacientes', '2025-03-04 21:22:53'),
+(7103, 8096, ' IP: ::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36', 'GET', '/admin/pacientes/search/1', '2025-03-04 21:22:56'),
+(7104, 5083, ' IP: ::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36', 'GET', '/admin/pacientes', '2025-03-04 21:23:43'),
+(7105, 4458, ' IP: ::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36', 'GET', '/js/popper.min.js.map', '2025-03-04 21:23:43'),
+(7106, 7292, ' IP: ::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36', 'POST', '/admin/pacientes', '2025-03-04 21:23:43'),
+(7107, 9881, ' IP: ::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36', 'GET', '/admin/pacientes/search/1', '2025-03-04 21:23:45'),
+(7108, 7166, ' IP: ::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36', 'GET', '/admin/pacientes', '2025-03-04 21:23:57'),
+(7109, 5644, ' IP: ::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36', 'GET', '/js/popper.min.js.map', '2025-03-04 21:23:57'),
+(7110, 6856, ' IP: ::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36', 'POST', '/admin/pacientes', '2025-03-04 21:23:57'),
+(7111, 5971, ' IP: ::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36', 'GET', '/admin/pacientes/search/1', '2025-03-04 21:23:59'),
+(7112, 5739, ' IP: ::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36', 'GET', '/admin/pacientes/search/1', '2025-03-04 21:24:21'),
+(7113, 3531, ' IP: ::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36', 'GET', '/admin/diagnosticos', '2025-03-04 21:24:28'),
+(7114, 4974, ' IP: ::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36', 'GET', '/js/popper.min.js.map', '2025-03-04 21:24:29'),
+(7115, 3069, ' IP: ::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36', 'GET', '/admin/diagnosticos/buscar-pacientes?q=lee', '2025-03-04 21:24:33'),
+(7116, 3186, ' IP: ::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36', 'GET', '/admin/diagnosticos/buscar-pacientes?q=nao', '2025-03-04 21:25:01'),
+(7117, 6849, ' IP: ::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36', 'GET', '/admin/diagnosticos', '2025-03-04 21:25:54'),
+(7118, 8368, ' IP: ::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36', 'GET', '/js/popper.min.js.map', '2025-03-04 21:25:54'),
+(7119, 7446, ' IP: ::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36', 'GET', '/admin/diagnosticos/buscar-pacientes?q=leenh', '2025-03-04 21:26:02'),
+(7120, 5811, ' IP: ::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36', 'GET', '/admin/diagnosticos', '2025-03-04 21:27:02'),
+(7121, 7374, ' IP: ::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36', 'GET', '/js/popper.min.js.map', '2025-03-04 21:27:02'),
+(7122, 5732, ' IP: ::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36', 'GET', '/admin/diagnosticos/buscar-pacientes?q=leenh', '2025-03-04 21:27:04'),
+(7123, 1005, ' IP: ::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36', 'GET', '/admin/diagnosticos', '2025-03-04 21:28:38'),
+(7124, 8277, ' IP: ::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36', 'GET', '/js/popper.min.js.map', '2025-03-04 21:28:38'),
+(7125, 3587, ' IP: ::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36', 'GET', '/admin/diagnosticos', '2025-03-04 21:29:21'),
+(7126, 6718, ' IP: ::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36', 'GET', '/js/popper.min.js.map', '2025-03-04 21:29:21'),
+(7127, 9497, ' IP: ::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36', 'GET', '/admin/diagnosticos', '2025-03-04 21:31:19'),
+(7128, 2984, ' IP: ::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36', 'GET', '/js/popper.min.js.map', '2025-03-04 21:31:20'),
+(7129, 8640, ' IP: ::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36', 'GET', '/admin/diagnosticos/buscar-pacientes?q=leenh', '2025-03-04 21:31:23'),
+(7130, 6014, ' IP: ::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36', 'GET', '/admin/diagnosticos/obtener-preguntas', '2025-03-04 21:32:42'),
+(7131, 7776, ' IP: ::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36', 'POST', '/admin/diagnosticos/guardar-respuestas', '2025-03-04 21:33:13');
 
 -- --------------------------------------------------------
 
@@ -617,7 +791,10 @@ INSERT INTO `sis_sesiones` (`idsesion`, `idusuario`, `session_token`, `ip`, `fec
 (27, 1, 'a6ee11743f68172438a62c679deb95a19bca1250bd41ceaf33526a32c0503eb96e42cf6b5e16e994', '::1', '2025-03-03 19:04:31', '1741051543', 1),
 (28, 1, '2976702195710ae73226d6665f89f40d1559c71b0258996efc0ea0520b9319d8cfef88470dae6e4e', '::1', '2025-03-03 23:03:19', '1741068533', 0),
 (29, 1, 'c8a2704a0956e0ce8328c0bf1292363e13207ea9d95857cca6abdd4e83a94024552cde13568e05da', '::1', '2025-03-04 01:17:21', '1741073961', 1),
-(30, 1, '295162374f46e214c477f40a908bea51fb71304a9779b359e5d1d3b43d92bfcc9d0d217ccd47e7b2', '::1', '2025-03-04 12:27:57', '1741117249', 1);
+(30, 1, '295162374f46e214c477f40a908bea51fb71304a9779b359e5d1d3b43d92bfcc9d0d217ccd47e7b2', '::1', '2025-03-04 12:27:57', '1741117249', 0),
+(31, 1, '653a51bdff01ca723660764bc20b9a750b82e74ea4a66770bdac362c436fef1b461be633667e6919', '::1', '2025-03-04 15:57:28', '1741131084', 0),
+(32, 1, 'e2ad7dcf34dcdf86a7cdc0ee07dc829f88e5712db672407f9877803db5eed2bfc2a01494019e9f41', '::1', '2025-03-04 18:35:27', '1741139440', 0),
+(33, 1, '558c33e51baf3399d5aabe028dd3502d426d8f477a852b6eb66590f87aeba8e9e6ce758b068b2b26', '::1', '2025-03-04 20:51:14', '1741145593', 1);
 
 -- --------------------------------------------------------
 
@@ -844,7 +1021,7 @@ ALTER TABLE `sd_especialidades`
 -- AUTO_INCREMENT de la tabla `sd_pacientes`
 --
 ALTER TABLE `sd_pacientes`
-  MODIFY `idpaciente` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `idpaciente` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- AUTO_INCREMENT de la tabla `sd_personal_especialidad`
@@ -880,7 +1057,7 @@ ALTER TABLE `sis_acciones`
 -- AUTO_INCREMENT de la tabla `sis_centinela`
 --
 ALTER TABLE `sis_centinela`
-  MODIFY `idcentinela` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6966;
+  MODIFY `idcentinela` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7132;
 
 --
 -- AUTO_INCREMENT de la tabla `sis_menus`
@@ -922,7 +1099,7 @@ ALTER TABLE `sis_rol`
 -- AUTO_INCREMENT de la tabla `sis_sesiones`
 --
 ALTER TABLE `sis_sesiones`
-  MODIFY `idsesion` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=31;
+  MODIFY `idsesion` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=34;
 
 --
 -- AUTO_INCREMENT de la tabla `sis_submenus`
