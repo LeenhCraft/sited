@@ -168,11 +168,24 @@ class TestController extends Controller
                 ];
             }
 
-            // Calcular puntuación
-            $puntuacion = $this->calcularPuntuacion($respuestas);
+            // Datos antropométricos para el modelo
+            $datosAntropometricos = [
+                'edad' => $pacienteData['edad'],
+                'imc' => $pacienteData['imc']
+            ];
 
-            // Actualizar test con resultado
-            $testModel->actualizarTendencia($idTest, $puntuacion);
+            // Convertir respuestas para el modelo Naive Bayes
+            $entradasModelo = $respuestasModel->convertirRespuestasParaModelo($respuestas, $datosAntropometricos);
+
+            // Aplicar el clasificador de Naive Bayes
+            $clasificador = new DiabetesRiskClassifier($entradasModelo);
+            $analisis = $clasificador->analizar();
+
+            // Guardar la clasificación en el test
+            $testModel->actualizarTendencia($idTest, $analisis);
+
+            // Calcular puntuación
+            // $puntuacion = $this->calcularPuntuacion($respuestas);
 
             // Confirmar transacción
             // $this->db->commit();
@@ -183,7 +196,9 @@ class TestController extends Controller
                 'resultados' => $resultados,
                 'resultado' => [
                     'id_test' => $idTest,
-                    'puntuacion' => $puntuacion
+                    // 'puntuacion' => $puntuacion,
+                    'clasificacion' => $analisis["clasificacion"],
+                    'analisis' => $analisis
                 ]
             ]);
         } catch (\Exception $e) {

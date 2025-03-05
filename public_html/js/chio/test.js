@@ -608,6 +608,8 @@
    * Muestra los resultados del test
    */
   function mostrarResultados(resultadoData) {
+    console.log(resultadoData);
+    
     // Si no hay datos de resultado, calcular localmente
     if (!resultadoData) {
       resultadoData = {
@@ -618,6 +620,9 @@
 
     const totalPuntos = resultadoData.puntuacion || calcularPuntuacion();
     let nivelRiesgo, mensaje, color, porcentajeRiesgo;
+
+    console.log("Total puntos:", totalPuntos);
+    
 
     if (totalPuntos <= 7) {
       nivelRiesgo = "Bajo";

@@ -90,6 +90,7 @@ class RespuestasModel extends TableModel
             'id_pregunta' => $idPregunta,
             'idtest' => $idTest,
             'respuesta_usuario' => $contenido,
+            'id_respuesta' => $idRespuesta,
             'fecha_registro' => date('Y-m-d H:i:s')
         ];
 
@@ -106,5 +107,79 @@ class RespuestasModel extends TableModel
     {
         // Simulamos que se guardó correctamente
         return true;
+    }
+
+    /**
+     * Convierte las respuestas en valores para el clasificador Naive Bayes
+     * 
+     * @param array $respuestas Array de respuestas con id_pregunta e id_respuesta
+     * @return array Array de 13 valores para el clasificador
+     */
+    public function convertirRespuestasParaModelo($respuestas, $datosAntropometricos)
+    {
+
+        // Inicializar array de entradas con valores por defecto
+        $entradas = array_fill(0, 13, 0);
+
+        // Procesar edad (índice 0)
+        $edad = $datosAntropometricos['edad'];
+        if ($edad < 45) {
+            $entradas[0] = 0;
+        } elseif ($edad >= 45 && $edad <= 54) {
+            $entradas[0] = 1;
+        } else {
+            $entradas[0] = 2;
+        }
+
+        // Procesar IMC (índice 1)
+        $imc = $datosAntropometricos['imc'];
+        if ($imc < 25) {
+            $entradas[1] = 0;
+        } elseif ($imc >= 25 && $imc <= 30) {
+            $entradas[1] = 1;
+        } else {
+            $entradas[1] = 2;
+        }
+
+        // Mapeo de id_pregunta a índice en el array de entradas
+        // Comienza desde la 3ra pregunta (índice 2) ya que las dos primeras
+        // son edad e IMC que ya fueron procesadas
+        $mapeoPreguntas = [
+            1 => 2,  // Ansiedad/estrés
+            2 => 3,  // Consumo grasas
+            3 => 4,  // Sed/hambre
+            4 => 5,  // Antecedentes glucosa
+            5 => 6,  // Visión borrosa
+            6 => 7,  // Cicatrización
+            7 => 8,  // Cansancio
+            8 => 9, // Hormigueo
+            9 => 10, // Actividad física
+            10 => 11, // Frutas/verduras
+            11 => 12  // Antecedentes familiares
+        ];
+
+        foreach ($respuestas as $respuesta) {
+            $idPregunta = $respuesta['id_pregunta'];
+            $idRespuesta = $respuesta['id_respuesta'];
+
+            // Verificar si la pregunta es parte del modelo
+            if (!isset($mapeoPreguntas[$idPregunta])) {
+                continue;
+            }
+
+            // Obtener la respuesta
+            $respuestaData = $this->obtenerRespuestaPorId($idRespuesta);
+            $this->emptyQuery();
+
+            if ($respuestaData && !empty($respuestaData['metadatos'])) {
+                $metadatos = json_decode($respuestaData['metadatos'], true);
+
+                if (isset($metadatos['valor_seleccionado'])) {
+                    $entradas[$mapeoPreguntas[$idPregunta]] = (int)$metadatos['valor_seleccionado'];
+                }
+            }
+        }
+
+        return $entradas;
     }
 }

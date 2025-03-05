@@ -32,13 +32,10 @@ class TestModel extends TableModel
      * @param int $puntuacion Puntuación del test
      * @return array|bool Resultado de la actualización
      */
-    public function actualizarTendencia($idTest, $puntuacion)
+    public function actualizarTendencia($idTest, $analisis)
     {
-        // Convertir puntuación a porcentaje de riesgo
-        $porcentaje = $this->calcularPorcentajeRiesgo($puntuacion);
-
         $datos = [
-            'tendencia_modelo' => $porcentaje . '%',
+            'tendencia_modelo' => "0",
             'procesado_modelo' => 1,
             'ultima_actualizacion' => date('Y-m-d H:i:s'),
             'actualizado_por' => $_SESSION["app_id"] ?? 1
