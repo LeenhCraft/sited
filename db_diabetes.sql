@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Servidor: localhost:3306
--- Tiempo de generación: 06-03-2025 a las 02:49:06
+-- Tiempo de generación: 06-03-2025 a las 23:24:25
 -- Versión del servidor: 8.0.30
 -- Versión de PHP: 8.1.10
 
@@ -214,15 +214,6 @@ CREATE TABLE `sd_pacientes` (
   `eliminado_por` int DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
---
--- Volcado de datos para la tabla `sd_pacientes`
---
-
-INSERT INTO `sd_pacientes` (`idpaciente`, `nombre`, `dni`, `celular`, `edad`, `sexo`, `peso`, `altura`, `fecha_registro`, `creado_por`, `ultima_actualizacion`, `actualizado_por`, `eliminado`, `fecha_eliminacion`, `eliminado_por`) VALUES
-(1, 'BUSTAMANTE FERNANDEZ ASHLY NAOMI', '76144151', '0', '46', 'F', 75.00, 1.55, '2025-02-25 15:07:18', 0, '2025-03-05 00:05:43', 1, 0, NULL, NULL),
-(2, 'BUSTAMANTE FERNANDEZ LEENH ALEXANDER', '76144152', '987654321', '23', 'M', 70.00, 1.70, '2025-03-04 21:08:02', 1, '2025-03-05 00:14:49', 1, 0, NULL, NULL),
-(3, 'MONTENEGRO RAMIREZ, JACK BRAYAN', '76144150', '0', '23', '0', 70.00, 1.60, '2025-03-05 18:02:41', 0, '2025-03-05 18:26:45', 3, 0, NULL, NULL);
-
 -- --------------------------------------------------------
 
 --
@@ -285,17 +276,6 @@ CREATE TABLE `sd_test` (
   `eliminado_por` int DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
---
--- Volcado de datos para la tabla `sd_test`
---
-
-INSERT INTO `sd_test` (`idtest`, `idpaciente`, `idusuario`, `peso`, `altura`, `imc`, `fecha_hora`, `tendencia_label`, `tendencia_modelo`, `procesado_modelo`, `respuesta_analisis`, `fecha_registro`, `creado_por`, `ultima_actualizacion`, `actualizado_por`, `eliminado`, `fecha_eliminacion`, `eliminado_por`) VALUES
-(1, 2, 1, 70.000, 1.700, 24.200, '2025-03-05 00:14:49', 'Alto', '38.461538461538', 1, '{\"entradas\":[0,0,0,2,1,2,2,0,2,1,2,1,1],\"conteo\":{\"bajo\":4,\"moderado\":4,\"alto\":5,\"total\":13},\"probabilidades\":{\"bajo\":30.76923076923077,\"moderado\":30.76923076923077,\"alto\":38.46153846153847},\"clasificacion\":\"Alto\",\"recomendaciones\":[\"Consulta m\\u00e9dica inmediata\",\"Pruebas de laboratorio para evaluar niveles de glucosa\",\"Posible derivaci\\u00f3n a especialista en endocrinolog\\u00eda\"]}', '2025-03-05 00:14:49', 1, '2025-03-05 00:14:49', 1, 0, NULL, NULL),
-(2, 3, 3, 70.000, 1.700, 24.200, '2025-03-05 18:17:58', 'Alto', '46.153846153846', 1, '{\"entradas\":[0,0,0,2,1,2,1,2,1,2,2,2,1],\"conteo\":{\"bajo\":3,\"moderado\":4,\"alto\":6,\"total\":13},\"probabilidades\":{\"bajo\":23.076923076923077,\"moderado\":30.76923076923077,\"alto\":46.15384615384615},\"clasificacion\":\"Alto\",\"recomendaciones\":[\"Consulta m\\u00e9dica inmediata\",\"Pruebas de laboratorio para evaluar niveles de glucosa\",\"Posible derivaci\\u00f3n a especialista en endocrinolog\\u00eda\"]}', '2025-03-05 18:17:58', 3, '2025-03-05 18:17:58', 1, 0, NULL, NULL),
-(3, 3, 3, 70.000, 1.700, 24.200, '2025-03-05 18:19:40', 'Moderado', '46.153846153846', 1, '{\"entradas\":[0,0,0,1,1,2,0,1,0,2,1,1,1],\"conteo\":{\"bajo\":5,\"moderado\":6,\"alto\":2,\"total\":13},\"probabilidades\":{\"bajo\":38.46153846153847,\"moderado\":46.15384615384615,\"alto\":15.384615384615385},\"clasificacion\":\"Moderado\",\"recomendaciones\":[\"Consulta m\\u00e9dica para evaluaci\\u00f3n preventiva\",\"Revisar h\\u00e1bitos alimenticios y actividad f\\u00edsica\",\"Considerar pruebas espec\\u00edficas de glucosa\"]}', '2025-03-05 18:19:40', 3, '2025-03-05 18:19:40', 1, 0, NULL, NULL),
-(4, 3, 3, 70.000, 1.600, 27.300, '2025-03-05 18:25:32', 'Bajo', '84.615384615385', 1, '{\"entradas\":[0,1,0,0,0,0,0,0,0,0,0,0,2],\"conteo\":{\"bajo\":11,\"moderado\":1,\"alto\":1,\"total\":13},\"probabilidades\":{\"bajo\":84.61538461538461,\"moderado\":7.6923076923076925,\"alto\":7.6923076923076925},\"clasificacion\":\"Bajo\",\"recomendaciones\":[\"Continuar con h\\u00e1bitos saludables\",\"Monitoreo rutinario de glucosa en chequeos anuales\"]}', '2025-03-05 18:25:32', 3, '2025-03-05 18:25:32', 1, 0, NULL, NULL),
-(5, 3, 3, 70.000, 1.600, 27.300, '2025-03-05 18:26:45', 'Bajo', '92.307692307692', 1, '{\"entradas\":[0,1,0,0,0,0,0,0,0,0,0,0,0],\"conteo\":{\"bajo\":12,\"moderado\":1,\"alto\":0,\"total\":13},\"probabilidades\":{\"bajo\":92.3076923076923,\"moderado\":7.6923076923076925,\"alto\":0},\"clasificacion\":\"Bajo\",\"recomendaciones\":[\"Continuar con h\\u00e1bitos saludables\",\"Monitoreo rutinario de glucosa en chequeos anuales\"]}', '2025-03-05 18:26:45', 3, '2025-03-05 18:26:45', 1, 0, NULL, NULL);
-
 -- --------------------------------------------------------
 
 --
@@ -310,47 +290,6 @@ CREATE TABLE `sd_test_preguntas` (
   `respuesta_usuario` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `fecha_registro` datetime NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
---
--- Volcado de datos para la tabla `sd_test_preguntas`
---
-
-INSERT INTO `sd_test_preguntas` (`id_test_pregunta`, `idtest`, `id_pregunta`, `id_respuesta`, `respuesta_usuario`, `fecha_registro`) VALUES
-(1, 1, 1, 1, 'Casi Nunca', '2025-03-05 00:14:49'),
-(2, 1, 2, 9, 'Mucho', '2025-03-05 00:14:49'),
-(3, 1, 3, 11, 'Poco', '2025-03-05 00:14:49'),
-(4, 1, 4, 14, 'Si', '2025-03-05 00:14:49'),
-(5, 1, 5, 17, 'Sí de forma constante', '2025-03-05 00:14:49'),
-(6, 1, 6, 18, 'No', '2025-03-05 00:14:49'),
-(7, 1, 7, 23, 'Mucho', '2025-03-05 00:14:49'),
-(8, 1, 8, 28, 'Poco', '2025-03-05 00:14:49'),
-(9, 1, 9, 32, 'Mucho', '2025-03-05 00:14:49'),
-(10, 1, 10, 34, 'Regularmente', '2025-03-05 00:14:49'),
-(11, 1, 11, 37, 'Si (segundo y tercer grado de consanguinidad): abuelos tíos sobrinos', '2025-03-05 00:14:49'),
-(12, 2, 1, 1, 'Casi Nunca', '2025-03-05 18:17:58'),
-(13, 2, 2, 9, 'Mucho', '2025-03-05 18:17:58'),
-(14, 2, 3, 11, 'Poco', '2025-03-05 18:17:58'),
-(15, 2, 4, 14, 'Si', '2025-03-05 18:17:58'),
-(16, 2, 5, 16, 'Sí pero ocasionalmente', '2025-03-05 18:17:58'),
-(17, 2, 6, 20, 'Sí siempre', '2025-03-05 18:17:58'),
-(18, 2, 7, 22, 'Poco', '2025-03-05 18:17:58'),
-(19, 2, 8, 29, 'Mucho', '2025-03-05 18:17:58'),
-(20, 2, 9, 32, 'Mucho', '2025-03-05 18:17:58'),
-(21, 2, 10, 35, 'Si', '2025-03-05 18:17:58'),
-(22, 2, 11, 37, 'Si (segundo y tercer grado de consanguinidad): abuelos tíos sobrinos', '2025-03-05 18:17:58'),
-(23, 3, 1, 1, 'Casi Nunca', '2025-03-05 18:19:40'),
-(24, 3, 2, 8, 'Poco', '2025-03-05 18:19:40'),
-(25, 3, 3, 11, 'Poco', '2025-03-05 18:19:40'),
-(26, 3, 4, 14, 'Si', '2025-03-05 18:19:40'),
-(27, 3, 5, 15, 'No', '2025-03-05 18:19:40'),
-(28, 3, 6, 19, 'Sí ocasionalmente', '2025-03-05 18:19:40'),
-(29, 3, 7, 21, 'Nada', '2025-03-05 18:19:40'),
-(30, 3, 8, 29, 'Mucho', '2025-03-05 18:19:40'),
-(31, 3, 9, 31, 'Poco', '2025-03-05 18:19:40'),
-(32, 3, 10, 34, 'Regularmente', '2025-03-05 18:19:40'),
-(33, 3, 11, 37, 'Si (segundo y tercer grado de consanguinidad): abuelos tíos sobrinos', '2025-03-05 18:19:40'),
-(34, 4, 11, 38, 'Si (primer grado de consanguinidad): padres e hijos', '2025-03-05 18:25:32'),
-(35, 5, 4, 13, 'No', '2025-03-05 18:26:45');
 
 -- --------------------------------------------------------
 
@@ -564,9 +503,7 @@ CREATE TABLE `sis_personal` (
 --
 
 INSERT INTO `sis_personal` (`idpersona`, `per_dni`, `per_nombre`, `per_celular`, `per_email`, `per_direcc`, `per_foto`, `per_estado`, `per_fecha`) VALUES
-(1, 75933129, 'desarrollador', 987654321, 'hackingleenh@gmail.com', '', NULL, 1, '2022-07-22 01:09:20'),
-(2, 76144151, 'BUSTAMANTE FERNANDEZ ASHLY NAOMI', NULL, 'hackingleenh@gmail.com', NULL, NULL, 1, '2025-02-25 15:07:18'),
-(3, 76144150, 'MONTENEGRO RAMIREZ, JACK BRAYAN', NULL, '76144150@gmail.com', NULL, NULL, 1, '2025-03-05 18:02:41');
+(1, 75933129, 'desarrollador', 987654321, 'hackingleenh@gmail.com', '', NULL, 1, '2022-07-22 01:09:20');
 
 -- --------------------------------------------------------
 
@@ -649,20 +586,7 @@ CREATE TABLE `sis_sesiones` (
 --
 
 INSERT INTO `sis_sesiones` (`idsesion`, `idusuario`, `session_token`, `ip`, `fecha_registro`, `tiempo_expiracion`, `activo`) VALUES
-(1, 2, '0ff58d7c85bc3f2c17efa627b5a75c58ac9f88f86f03c2e357236496869d451828ab06de505931be', '::1', '2025-03-05 15:49:42', '1741211382', 0),
-(2, 2, '3af7cfcb4de34e7b86b03b2003afde037c8f8d22f7ecc37117feab03cee2f04f75223d1ac79e9c81', '::1', '2025-03-05 15:50:24', '1741211424', 0),
-(3, 2, 'a8645d7bfac6932f8b0fb027f92bc3fc8feed9af50a7c0d33d24a3b4ac6d84cd74f7e8b33c0296ee', '::1', '2025-03-05 15:51:56', '1741211516', 0),
-(4, 2, 'c819b3a71f4c5b78c596fe34172379dc6ac85490cb5a6cfb37a4480bcba3187184e292be296c8fb0', '::1', '2025-03-05 15:52:03', '1741211523', 0),
-(5, 2, '2dbc3b4587db5b6444e95889698c986b8adf376cb3ad37b17c328aa60ace93f4f9730c7557565e25', '::1', '2025-03-05 15:54:32', '1741211672', 0),
-(6, 2, 'd48412add0dfc8bc24d764c2b93798b30cca647f2f74135f8ad39fc689f72a88fd0c2195f68fd400', '::1', '2025-03-05 16:03:14', '1741212315', 0),
-(7, 2, '39a81939b88b918a25c37c741b35d841fb9ad918804b286146e8438fbd4c6d4db1b6a45802b5776c', '::1', '2025-03-05 16:07:27', '1741212495', 0),
-(8, 2, '901544878c8950724d9ac22d065e45aeff71f72f1177bccb7e436fa5422aa7dafcf1286c14bae187', '::1', '2025-03-05 16:08:23', '1741212504', 0),
-(9, 2, 'b7e51a80ae9a52436b8de2bd72c7dca584b39767d31224c97148a5966906bb36722c83c82f902644', '::1', '2025-03-05 16:09:25', '1741212648', 0),
-(10, 2, 'e528ce6a43dd8c3d19da58f13cc4f16aff8009f914749ec84d61baeaf81026e3cb7b5713733a5f9a', '::1', '2025-03-05 16:10:54', '1741219149', 0),
-(11, 1, '5c0222b76535b60401d46e535a0e2e57a083df026008f7921bc6edb3bd043b84ba3252432afee3bf', '::1', '2025-03-05 18:00:20', '1741219335', 0),
-(12, 3, '6d29ec861ed55f5a1d167f7e4eaf8516956069038202b834f582ad7412cbbf91b8bb357c5e98000f', '::1', '2025-03-05 18:03:07', '1741220327', 0),
-(13, 3, '6395f03c5b9b18d833ccef10eee196954643e73dbe1b76ab9e4c2034d521ea93c8df1fa40bf937d1', '::1', '2025-03-05 18:19:23', '1741221192', 1),
-(14, 1, 'bcbca9c8c6a8b7c026a06917ecd444bd38f2da09b2b8b5759d446dedf15201e4169263d4103ae278', '::1', '2025-03-05 18:20:01', '1741220441', 1);
+(1, 1, '95320707f7a307ccd65778e842ecc8e4b58c4e8a27349bace19f6a71e43ac73b7b0d70ae1c1f6823', '::1', '2025-03-06 18:22:05', '1741307009', 1);
 
 -- --------------------------------------------------------
 
@@ -731,9 +655,7 @@ CREATE TABLE `sis_usuarios` (
 --
 
 INSERT INTO `sis_usuarios` (`idusuario`, `idrol`, `idpersona`, `usu_usuario`, `usu_pass`, `usu_token`, `usu_activo`, `usu_estado`, `usu_primera`, `usu_twoauth`, `usu_code_twoauth`, `usu_fecha`, `ultima_actualizacion`) VALUES
-(1, 1, 1, 'developer', '$2y$10$Fit/2psoTtAP.pctt2qiluYnf4vYcKqbGvFbZa.8/ngskf1HlwZvW', NULL, 1, 1, 0, 0, '', '2022-07-22 01:10:31', NULL),
-(2, 4, 2, 'leenhcraft', '$2y$10$xi42mbC26BQdjewO6/uwr.qPw4f6MjyVg/sU3frWBSkQSf8VQMR2q', NULL, 1, 1, 0, 0, '', '2025-02-25 15:07:18', NULL),
-(3, 4, 3, '76144150', '$2y$10$wg7QnvHRLBWCbTi1FOcP5e1KVRHev.Sy2bYMMTnvN7gP08/J43f4a', NULL, 1, 1, 0, 0, '', '2025-03-05 18:02:41', NULL);
+(1, 1, 1, 'developer', '$2y$10$Fit/2psoTtAP.pctt2qiluYnf4vYcKqbGvFbZa.8/ngskf1HlwZvW', NULL, 1, 1, 0, 0, '', '2022-07-22 01:10:31', NULL);
 
 --
 -- Índices para tablas volcadas
@@ -891,7 +813,7 @@ ALTER TABLE `sd_especialidades`
 -- AUTO_INCREMENT de la tabla `sd_pacientes`
 --
 ALTER TABLE `sd_pacientes`
-  MODIFY `idpaciente` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `idpaciente` int NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT de la tabla `sd_personal_especialidad`
@@ -909,13 +831,13 @@ ALTER TABLE `sd_personal_medico`
 -- AUTO_INCREMENT de la tabla `sd_test`
 --
 ALTER TABLE `sd_test`
-  MODIFY `idtest` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+  MODIFY `idtest` int NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT de la tabla `sd_test_preguntas`
 --
 ALTER TABLE `sd_test_preguntas`
-  MODIFY `id_test_pregunta` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=36;
+  MODIFY `id_test_pregunta` int NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT de la tabla `sis_acciones`
@@ -927,7 +849,7 @@ ALTER TABLE `sis_acciones`
 -- AUTO_INCREMENT de la tabla `sis_centinela`
 --
 ALTER TABLE `sis_centinela`
-  MODIFY `idcentinela` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8025;
+  MODIFY `idcentinela` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9060;
 
 --
 -- AUTO_INCREMENT de la tabla `sis_menus`
@@ -969,7 +891,7 @@ ALTER TABLE `sis_rol`
 -- AUTO_INCREMENT de la tabla `sis_sesiones`
 --
 ALTER TABLE `sis_sesiones`
-  MODIFY `idsesion` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=15;
+  MODIFY `idsesion` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT de la tabla `sis_submenus`
