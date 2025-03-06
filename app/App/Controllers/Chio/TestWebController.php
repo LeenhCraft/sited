@@ -8,6 +8,7 @@ use App\Models\PreguntasModel;
 use App\Models\RespuestasModel;
 use App\Models\TableModel;
 use App\Models\TestModel;
+use Mpdf\Mpdf;
 
 class TestWebController extends Controller
 {
@@ -25,7 +26,7 @@ class TestWebController extends Controller
 
         $userData = $model
             ->select(
-                "p.idpersona as id_paciente",
+                "pa.idpaciente as id_paciente",
                 "p.per_nombre as nombre",
                 "p.per_email as email",
                 "pa.edad",
@@ -40,7 +41,7 @@ class TestWebController extends Controller
             ->first();
 
         return $this->render($response, "Chio.Test.TestWeb", [
-            "titulo_web" => "Iniciar Sesión",
+            "titulo_web" => "Test SITED",
             "url" => $request->getUri()->getPath(),
             "css" => [
                 "/assets/vendor/css/pages/ui-carousel.css",
@@ -52,6 +53,76 @@ class TestWebController extends Controller
                 "/js/chio/test-web.js?v=" . time()
             ],
             "user" => $userData
+        ]);
+    }
+
+    public function verTest($request, $response, $args)
+    {
+        $model = new TableModel();
+        $model->setTable("sis_usuarios u");
+        $model->setId("idusuario");
+
+        $userData = $model
+            ->select(
+                "pa.idpaciente as id_paciente",
+                "p.idpersona",
+                "u.idusuario",
+                "p.per_nombre as nombre",
+                "p.per_email as email",
+                "pa.edad",
+                "pa.sexo",
+                "pa.peso",
+                "pa.altura",
+                "u.ultima_actualizacion"
+            )
+            ->join("sis_personal p", "p.idpersona", "u.idpersona")
+            ->join("sd_pacientes pa", "pa.dni", "p.per_dni")
+            ->where("u.idusuario", $_SESSION["web_id"])
+            ->first();
+
+        $model = new TableModel();
+        $model->setTable("sd_test");
+        $model->setId("idtest");
+
+        $testData = $model
+            ->where("eliminado", "0")
+            ->where("idtest", $args['id'] ?? '0')
+            ->where("idpaciente", $userData['id_paciente'] ?? '0')
+            ->orderBy("fecha_hora", "DESC")
+            ->first();
+
+        $model = new TableModel();
+        $model->setTable("sd_test_preguntas tp");
+        $model->setId("id_test_pregunta");
+
+        $preguntas = $model
+            ->select(
+                "tp.*",
+                "p.titulo as pregunta_texto",
+                "r.contenido as respuesta_texto",
+                "r.metadatos"
+            )
+            ->join("pr_preguntas p", "p.id_pregunta", "tp.id_pregunta")
+            ->join("pr_respuestas r", "r.id_respuesta", "tp.id_respuesta")
+            ->where("tp.idtest", $testData['idtest'] ?? '0')
+            ->orderBy("tp.id_pregunta", "ASC")
+            ->get();
+
+        return $this->render($response, "Chio.Test.VerTest", [
+            "titulo_web" => "Test SITED",
+            "url" => $request->getUri()->getPath(),
+            "css" => [
+                "/assets/vendor/css/pages/ui-carousel.css",
+                "/assets/vendor/libs/swiper/swiper.css"
+            ],
+            "js" => [
+                "https://cdn.jsdelivr.net/npm/apexcharts",
+                "/assets/vendor/libs/swiper/swiper.js",
+                "/assets/js/ui-carousel.js",
+            ],
+            "user" => $userData,
+            "test" => $testData,
+            "preguntas" => $preguntas
         ]);
     }
 
@@ -212,5 +283,114 @@ class TestWebController extends Controller
                 500
             );
         }
+    }
+
+    /**
+     * Exportar datos en formato PDF
+     */
+    public function exportPdf($request, $response, $args)
+    {
+        $model = new TableModel();
+        $model->setTable("sis_usuarios u");
+        $model->setId("idusuario");
+
+        $userData = $model
+            ->select(
+                "pa.idpaciente as id_paciente",
+                "p.idpersona",
+                "u.idusuario",
+                "p.per_nombre as nombre",
+                "p.per_email as email",
+                "pa.edad",
+                "pa.sexo",
+                "pa.peso",
+                "pa.altura",
+                "u.ultima_actualizacion"
+            )
+            ->join("sis_personal p", "p.idpersona", "u.idpersona")
+            ->join("sd_pacientes pa", "pa.dni", "p.per_dni")
+            ->where("u.idusuario", $_SESSION["web_id"])
+            ->first();
+
+
+        if (!$userData) {
+            return $this->respondWithError($response, 'Usuario no encontrado', 404);
+        }
+
+        $model = new TableModel();
+        $model->setTable("sd_test");
+        $model->setId("idtest");
+
+        $testData = $model
+            ->where("eliminado", "0")
+            ->where("idtest", $args['id'])
+            ->where("idpaciente", $userData['id_paciente'])
+            ->orderBy("fecha_hora", "DESC")
+            ->first();
+
+        $model = new TableModel();
+        $model->setTable("sd_test_preguntas tp");
+        $model->setId("id_test_pregunta");
+
+        if (!$testData) {
+            return $this->respondWithError($response, 'Test no encontrado', 404);
+        }
+
+        $preguntas = $model
+            ->select(
+                "tp.*",
+                "p.titulo as pregunta_texto",
+                "r.contenido as respuesta_texto",
+                // "r.valor"
+            )
+            ->join("pr_preguntas p", "p.id_pregunta", "tp.id_pregunta")
+            ->join("pr_respuestas r", "r.id_respuesta", "tp.id_respuesta")
+            ->where("tp.idtest", $testData['idtest'])
+            ->orderBy("tp.id_pregunta", "ASC")
+            ->get();
+
+        // Crear instancia mPDF
+        $mpdf = new Mpdf([
+            'mode' => 'utf-8',
+            'format' => 'A4', // Landscape
+            'margin_left' => 15,
+            'margin_right' => 15,
+            'margin_top' => 15,
+            'margin_bottom' => 15,
+        ]);
+
+        // Añadir estilos CSS
+        $stylesheet = file_get_contents('./css/boxicons.css');
+        $mpdf->WriteHTML($stylesheet, \Mpdf\HTMLParserMode::HEADER_CSS);
+
+        // Datos del test
+        $html = $this->view('Pdf.TestPdf', [
+            "test" => [
+                'user' => $userData,
+                'test' => $testData,
+                'preguntas' => $preguntas
+            ]
+        ]);
+
+        // dep($html, 1);
+
+        // Escribir HTML
+        $mpdf->WriteHTML($html);
+
+        // Generar PDF
+        $pdfContent = $mpdf->Output('', 'S');
+
+        // Establecer headers para descarga
+        $fileName = 'Reporte_Tests_Diabetes_' . date('Ymd_His') . '.pdf';
+
+        $response = $response->withHeader('Content-Type', 'application/pdf')
+            ->withHeader('Content-Disposition', 'inline; filename="' . $fileName . '"')
+            ->withHeader('Cache-Control', 'max-age=0, no-cache, no-store, must-revalidate')
+            ->withHeader('Pragma', 'no-cache')
+            ->withHeader('Expires', '0');
+
+        $response->getBody()->write($pdfContent);
+
+        return $response;
     }
 }

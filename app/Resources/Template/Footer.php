@@ -54,6 +54,11 @@
 <!-- Core JS -->
 <!-- build:js assets/vendor/js/theme.js  -->
 
+<script src="/js/jquery.min.js"></script>
+<script src="/js/popper.min.js"></script>
+<script src="/js/jquery.dataTables.min.js"></script>
+<script src="/js/dataTables.bootstrap.min.js"></script>
+
 <script src="/assets/vendor/libs/popper/popper.js"></script>
 <script src="/assets/vendor/js/bootstrap.js"></script>
 <script src="/assets/vendor/libs/@algolia/autocomplete-js.js"></script>

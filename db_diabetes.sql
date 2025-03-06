@@ -564,7 +564,7 @@ CREATE TABLE `sis_personal` (
 --
 
 INSERT INTO `sis_personal` (`idpersona`, `per_dni`, `per_nombre`, `per_celular`, `per_email`, `per_direcc`, `per_foto`, `per_estado`, `per_fecha`) VALUES
-(1, 76144152, 'desarrollador', 987654321, 'hackingleenh@gmail.com', '', NULL, 1, '2022-07-22 01:09:20'),
+(1, 75933129, 'desarrollador', 987654321, 'hackingleenh@gmail.com', '', NULL, 1, '2022-07-22 01:09:20'),
 (2, 76144151, 'BUSTAMANTE FERNANDEZ ASHLY NAOMI', NULL, 'hackingleenh@gmail.com', NULL, NULL, 1, '2025-02-25 15:07:18'),
 (3, 76144150, 'MONTENEGRO RAMIREZ, JACK BRAYAN', NULL, '76144150@gmail.com', NULL, NULL, 1, '2025-03-05 18:02:41');
 

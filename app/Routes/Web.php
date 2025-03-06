@@ -44,7 +44,11 @@ $app->group('/perfil', function (RouteCollectorProxy $perfil) {
 
 
 $app->group('/sited', function (RouteCollectorProxy $sited) {
-    $sited->get('/test', TestWebController::class . ':index');
-    $sited->post('/test/guardar-respuestas', TestWebController::class . ':procesarRespuestas');
+    $sited->group('/test', function (RouteCollectorProxy $test) {
+        $test->get('', TestWebController::class . ':index');
+        $test->post('/guardar-respuestas', TestWebController::class . ':procesarRespuestas');
+        $test->get('/detalle/{id}', TestWebController::class . ':verTest');
+        $test->get('/api/detalle/{id}', TestWebController::class . ':exportPdf');
+    });
     $sited->post('/obtener-preguntas', TestWebController::class . ':obtenerPreguntas');
 })->add(LoginWebMiddleware::class);

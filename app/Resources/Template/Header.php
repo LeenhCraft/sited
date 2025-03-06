@@ -123,12 +123,15 @@
                         </li>
                         <?php if (isset($_SESSION["web_session"]) && $_SESSION["web_session"] != "") { ?>
                             <li class="nav-item">
+                                <a class="nav-link fw-medium" href="/sited/test">Realizar Test</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link fw-medium" href="/perfil/mis-tests">Mis Tests</a>
+                            </li>
+                            <li class="nav-item">
                                 <a class="nav-link fw-medium" href="/perfil">Perfil</a>
                             </li>
                         <?php } ?>
-                        <li class="nav-item">
-                            <a class="nav-link fw-medium" href="/sited/test">Realizar Test</a>
-                        </li>
                         <li class="nav-item">
                             <a class="nav-link fw-medium" href="/admin" target="_blank">Admin</a>
                         </li>

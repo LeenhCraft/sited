@@ -62,7 +62,7 @@ class LoginController extends Controller
             return $this->respondWithError($response, "El usuario o contraseña son incorrectos.");
         }
 
-        if ($userData["usu_estado"] == 0) {
+        if ($userData["usu_estado"] == 0 || $userData["usu_activo"] == 0) {
             return $this->respondWithError($response, "El usuario se encuentra deshabilitado.");
         }
 

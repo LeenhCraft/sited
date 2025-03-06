@@ -34,7 +34,7 @@ class PerfilController extends Controller
             ->first();
 
         return $this->render($response, "Chio.Perfil-usuario.Perfil", [
-            "titulo_web" => "Iniciar Sesión",
+            "titulo_web" => "Mi Perfil",
             "url" => $request->getUri()->getPath(),
             "css" => [
                 "/assets/vendor/css/pages/ui-carousel.css",
@@ -57,6 +57,7 @@ class PerfilController extends Controller
 
         $userData = $model
             ->select(
+                "pa.idpaciente as id_paciente",
                 "p.per_nombre as nombre",
                 "p.per_email as email",
                 "pa.edad",
@@ -70,8 +71,23 @@ class PerfilController extends Controller
             ->where("u.idusuario", $_SESSION["web_id"])
             ->first();
 
-        return $this->render($response, "Chio.Perfil-usuario.Perfil", [
-            "titulo_web" => "Iniciar Sesión",
+        $model = new TableModel();
+        $model->setTable("sd_test");
+        $model->setId("idtest");
+
+        $modelPaciente = new TableModel();
+        $modelPaciente->setTable("sd_test");
+        $modelPaciente->setId("idtest");
+
+        $testData = $model
+            ->where("eliminado", "0")
+            // ->where("idusuario", $_SESSION["web_id"])
+            ->where("idpaciente", $userData["id_paciente"])
+            ->orderBy("fecha_hora", "DESC")
+            ->get();
+
+        return $this->render($response, "Chio.Test.ListaPerfil", [
+            "titulo_web" => "Mis Tests",
             "url" => $request->getUri()->getPath(),
             "css" => [
                 "/assets/vendor/css/pages/ui-carousel.css",
@@ -80,9 +96,9 @@ class PerfilController extends Controller
             "js" => [
                 "/assets/vendor/libs/swiper/swiper.js",
                 "/assets/js/ui-carousel.js",
-                "/js/chio/login-user.js?v=" . time()
+                "/js/chio/lista-test.js?v=" . time()
             ],
-            "user" => $userData
+            "tests" => $testData
         ]);
     }
 

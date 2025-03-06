@@ -83,13 +83,18 @@
                                             </div>
                                         </div>
                                         <div class="col-12 mb-3">
-                                            <div class="card bg-label-success">
+                                            <div class="card bg-light">
                                                 <div class="card-body">
-                                                    <div class="d-flex justify-content-between align-items-center">
-                                                        <h6 class="mb-0">Mis Tests Realizados</h6>
-                                                        <a href="/perfil/mis-tests" class="btn btn-sm btn-success">
-                                                            <i class="icon-base bx bx-list-check"></i> Ver todos mis tests
-                                                        </a>
+                                                    <div class="">
+                                                        <h6 class="mb-2">Mis Tests Realizados</h6>
+                                                        <div class="d-flex gap-2">
+                                                            <a href="/sited/test" class="btn btn-sm btn-primary">
+                                                                <i class="icon-base bx bxs-folder-plus me-2"></i>Nuevo Test
+                                                            </a>
+                                                            <a href="/perfil/mis-tests" class="btn btn-sm btn-outline-primary">
+                                                                <i class="icon-base bx bx-list-check"></i> Ver todos mis tests
+                                                            </a>
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </div>
