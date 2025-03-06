@@ -460,7 +460,7 @@ class ListaTestController extends Controller
         ]);
 
         // Añadir estilos CSS
-        $stylesheet = file_get_contents('/css/pdf-styles.css');
+        $stylesheet = file_get_contents('./css/pdf-styles.css');
         $mpdf->WriteHTML($stylesheet, \Mpdf\HTMLParserMode::HEADER_CSS);
 
         // Encabezado
