@@ -138,7 +138,7 @@
                                 </a>
                             </div>
                         </div>
-                        <button type="submit" class="btn btn-primary d-grid w-100">Sign in</button>
+                        <button type="submit" class="btn btn-primary d-grid w-100">Iniciar Sesión</button>
                     </form>
 
                     <p class="text-center">

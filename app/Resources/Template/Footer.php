@@ -57,7 +57,7 @@
 <script src="/assets/vendor/libs/popper/popper.js"></script>
 <script src="/assets/vendor/js/bootstrap.js"></script>
 <script src="/assets/vendor/libs/@algolia/autocomplete-js.js"></script>
-
+<script src="/node_modules/sweetalert2/dist/sweetalert2.all.min.js"></script>
 <script src="/assets/vendor/libs/pickr/pickr.js"></script>
 
 <!-- endbuild -->

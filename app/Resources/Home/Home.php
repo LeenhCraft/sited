@@ -1,6 +1,4 @@
 <?php header_web('Template.Header', $data); ?>
-<script src="/assets/vendor/js/dropdown-hover.js"></script>
-<script src="/assets/vendor/js/mega-dropdown.js"></script>
 <!-- Sections:Start -->
 <div data-bs-spy="scroll" class="scrollspy-example">
     <!-- Hero: Start -->
@@ -45,11 +43,28 @@
                 </div>
             </div>
         </div>
-        <div class="landing-hero-blank">
-        </div>
     </section>
     <!-- Hero: End -->
-
 </div>
 <!-- / Sections:End -->
+
+<section id="landingCTA" class="section-py landing-cta position-relative p-lg-0 pb-0">
+    <div class="container">
+        <div class="row align-items-center gy-12">
+            <div class="col-lg-6 text-start text-sm-center text-lg-start">
+                <h3 class="cta-title text-primary fw-bold mb-1">¿Listo para iniciar?</h3>
+                <h5 class="text-body mb-8">
+                    Realiza el test y descubre si tienes tendencia a la diabetes
+                </h5>
+                <a href="/sited/test" class="btn btn-lg btn-primary">Realizar Test</a>
+            </div>
+            <div class="col-lg-6 pt-lg-12 text-center text-lg-end">
+                <img
+                    src="../../assets/img/front-pages/landing-page/cta-dashboard.png"
+                    alt="cta dashboard"
+                    class="img-fluid mt-lg-4" />
+            </div>
+        </div>
+    </div>
+</section>
 <?php footer_web('Template.Footer', $data); ?>

@@ -51,14 +51,15 @@ class PacientesModel extends TableModel
      * @param float $altura Altura en metros
      * @return bool|array Resultado de la actualización
      */
-    public function actualizarDatosPaciente($idPaciente, $edad, $peso, $altura)
+    public function actualizarDatosPaciente($idPaciente, $edad, $peso, $altura, $idUsuario = null)
     {
+        $idUsuario = $idUsuario ?? $_SESSION["app_id"];
         $datos = [
             'edad' => $edad,
             'peso' => $peso,
             'altura' => $altura,
             'ultima_actualizacion' => date('Y-m-d H:i:s'),
-            'actualizado_por' => $_SESSION["app_id"] ?? 1
+            'actualizado_por' => $idUsuario
         ];
 
         return $this->update($idPaciente, $datos);

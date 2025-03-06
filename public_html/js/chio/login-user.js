@@ -18,8 +18,8 @@ document.addEventListener("DOMContentLoaded", function () {
                   "Por favor, ingrese su correo electrónico o nombre de usuario",
               },
               stringLength: {
-                min: 6,
-                message: "Username must be more than 6 characters",
+                min: 4,
+                message: "EL usuario debe tener más de 4 caracteres",
               },
             },
           },
@@ -29,8 +29,8 @@ document.addEventListener("DOMContentLoaded", function () {
                 message: "Por favor, ingrese su contraseña",
               },
               stringLength: {
-                min: 6,
-                message: "La contraseña debe tener más de 6 caracteres",
+                min: 4,
+                message: "La contraseña debe tener más de 4 caracteres",
               },
             },
           },
@@ -83,14 +83,25 @@ document.addEventListener("DOMContentLoaded", function () {
             return response.json();
           })
           .then((data) => {
-            console.log("Respuesta del servidor:", data);
+            // console.log("Respuesta del servidor:", data);
             if (data.status) {
               // Mostrar mensaje de éxito
               Swal.fire({
                 icon: "success",
                 title: "Registro exitoso",
                 text: data.message,
+              }).then((result) => {
+                /* Read more about isConfirmed, isDenied below */
+                if (result.isConfirmed) {
+                  window.location.href = "/perfil";
+                } else if (result.isDenied) {
+                  Swal.fire("Cambios no guardados", "", "info");
+                }
               });
+              // Redireccionar al usuario a la página de perfil
+              setTimeout(() => {
+                window.location.href = "/perfil";
+              }, 3000);
             } else {
               // Mostrar mensaje de error
               Swal.fire({

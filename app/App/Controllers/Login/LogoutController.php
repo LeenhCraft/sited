@@ -42,9 +42,27 @@ class LogoutController extends Controller
 
     public function web($request, $response, $args)
     {
+        $model = new TableModel();
+        $model->setTable("sis_sesiones");
+        $model->setId("idsesion");
+        $existe = $model->select("idsesion")
+            ->where("session_token", $_SESSION['web_session'])
+            ->first();
+        if ($existe) {
+            $model->update(
+                $existe["idsesion"],
+                ["activo" => "0"]
+            );
+        }
+
         // eliminar lnh y pe de session
         unset($_SESSION['lnh']);
         unset($_SESSION['pe']);
+        // eliminar session
+        unset($_SESSION['web_id']);
+        unset($_SESSION['web_r']);
+        unset($_SESSION['web_session']);
+        unset($_SESSION["web_user"]);
         return $response
             ->withHeader('Location', base_url())
             ->withStatus(302);

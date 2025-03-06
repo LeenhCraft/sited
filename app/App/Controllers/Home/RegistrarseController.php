@@ -24,7 +24,7 @@ class RegistrarseController extends Controller
             //     "/assets/vendor/libs/swiper/swiper.css"
             // ],
             "js" => [
-                "/assets/js/pages-auth.js?v=" . time()
+                "/js/chio/register-user.js?v=" . time()
             ]
         ]);
     }

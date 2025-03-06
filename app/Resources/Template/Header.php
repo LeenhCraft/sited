@@ -121,237 +121,13 @@
                         <li class="nav-item">
                             <a class="nav-link fw-medium" aria-current="page" href="/">Inicio</a>
                         </li>
+                        <?php if (isset($_SESSION["web_session"]) && $_SESSION["web_session"] != "") { ?>
+                            <li class="nav-item">
+                                <a class="nav-link fw-medium" href="/perfil">Perfil</a>
+                            </li>
+                        <?php } ?>
                         <li class="nav-item">
-                            <a class="nav-link fw-medium" href="#">Nosotros</a>
-                        </li>
-                        <li class="nav-item mega-dropdown">
-                            <a
-                                href="javascript:void(0);"
-                                class="nav-link dropdown-toggle navbar-ex-14-mega-dropdown mega-dropdown fw-medium"
-                                aria-expanded="false"
-                                data-bs-toggle="mega-dropdown"
-                                data-trigger="hover">
-                                <span data-i18n="Pages">Paginas</span>
-                            </a>
-                            <div class="dropdown-menu p-4 p-xl-8">
-                                <div class="row gy-4">
-                                    <div class="col-12 col-lg">
-                                        <div class="h6 d-flex align-items-center mb-3 mb-lg-4">
-                                            <div class="avatar flex-shrink-0 me-3">
-                                                <span class="avatar-initial rounded bg-label-primary"><i class="icon-base bx bx-grid-alt"></i></span>
-                                            </div>
-                                            <span class="ps-1">Other</span>
-                                        </div>
-                                        <ul class="nav flex-column">
-                                            <li class="nav-item">
-                                                <a class="nav-link mega-dropdown-link" href="pricing-page.html">
-                                                    <i class="icon-base bx bx-radio-circle me-1"></i>
-                                                    <span data-i18n="Pricing">Pricing</span>
-                                                </a>
-                                            </li>
-                                            <li class="nav-item">
-                                                <a class="nav-link mega-dropdown-link" href="payment-page.html">
-                                                    <i class="icon-base bx bx-radio-circle me-1"></i>
-                                                    <span data-i18n="Payment">Payment</span>
-                                                </a>
-                                            </li>
-                                            <li class="nav-item">
-                                                <a class="nav-link mega-dropdown-link" href="checkout-page.html">
-                                                    <i class="icon-base bx bx-radio-circle me-1"></i>
-                                                    <span data-i18n="Checkout">Checkout</span>
-                                                </a>
-                                            </li>
-                                            <li class="nav-item">
-                                                <a class="nav-link mega-dropdown-link" href="help-center-landing.html">
-                                                    <i class="icon-base bx bx-radio-circle me-1"></i>
-                                                    <span data-i18n="Help Center">Help Center</span>
-                                                </a>
-                                            </li>
-                                        </ul>
-                                    </div>
-                                    <div class="col-12 col-lg">
-                                        <div class="h6 d-flex align-items-center mb-3 mb-lg-4">
-                                            <div class="avatar flex-shrink-0 me-3">
-                                                <span class="avatar-initial rounded bg-label-primary"><i class="icon-base bx bx-lock-open icon-lg"></i></span>
-                                            </div>
-                                            <span class="ps-1">Auth Demo</span>
-                                        </div>
-                                        <ul class="nav flex-column">
-                                            <li class="nav-item">
-                                                <a
-                                                    class="nav-link mega-dropdown-link"
-                                                    href="../vertical-menu-template/auth-login-basic.html"
-                                                    target="_blank">
-                                                    <i class="icon-base bx bx-radio-circle me-1"></i>
-                                                    Login (Basic)
-                                                </a>
-                                            </li>
-                                            <li class="nav-item">
-                                                <a
-                                                    class="nav-link mega-dropdown-link"
-                                                    href="../vertical-menu-template/auth-login-cover.html"
-                                                    target="_blank">
-                                                    <i class="icon-base bx bx-radio-circle me-1"></i>
-                                                    Login (Cover)
-                                                </a>
-                                            </li>
-                                            <li class="nav-item">
-                                                <a
-                                                    class="nav-link mega-dropdown-link"
-                                                    href="../vertical-menu-template/auth-register-basic.html"
-                                                    target="_blank">
-                                                    <i class="icon-base bx bx-radio-circle me-1"></i>
-                                                    Register (Basic)
-                                                </a>
-                                            </li>
-                                            <li class="nav-item">
-                                                <a
-                                                    class="nav-link mega-dropdown-link"
-                                                    href="../vertical-menu-template/auth-register-cover.html"
-                                                    target="_blank">
-                                                    <i class="icon-base bx bx-radio-circle me-1"></i>
-                                                    Register (Cover)
-                                                </a>
-                                            </li>
-                                            <li class="nav-item">
-                                                <a
-                                                    class="nav-link mega-dropdown-link"
-                                                    href="../vertical-menu-template/auth-register-multisteps.html"
-                                                    target="_blank">
-                                                    <i class="icon-base bx bx-radio-circle me-1"></i>
-                                                    Register (Multi-steps)
-                                                </a>
-                                            </li>
-                                            <li class="nav-item">
-                                                <a
-                                                    class="nav-link mega-dropdown-link"
-                                                    href="../vertical-menu-template/auth-forgot-password-basic.html"
-                                                    target="_blank">
-                                                    <i class="icon-base bx bx-radio-circle me-1"></i>
-                                                    Forgot Password (Basic)
-                                                </a>
-                                            </li>
-                                            <li class="nav-item">
-                                                <a
-                                                    class="nav-link mega-dropdown-link"
-                                                    href="../vertical-menu-template/auth-forgot-password-cover.html"
-                                                    target="_blank">
-                                                    <i class="icon-base bx bx-radio-circle me-1"></i>
-                                                    Forgot Password (Cover)
-                                                </a>
-                                            </li>
-                                            <li class="nav-item">
-                                                <a
-                                                    class="nav-link mega-dropdown-link"
-                                                    href="../vertical-menu-template/auth-reset-password-basic.html"
-                                                    target="_blank">
-                                                    <i class="icon-base bx bx-radio-circle me-1"></i>
-                                                    Reset Password (Basic)
-                                                </a>
-                                            </li>
-                                            <li class="nav-item">
-                                                <a
-                                                    class="nav-link mega-dropdown-link"
-                                                    href="../vertical-menu-template/auth-reset-password-cover.html"
-                                                    target="_blank">
-                                                    <i class="icon-base bx bx-radio-circle me-1"></i>
-                                                    Reset Password (Cover)
-                                                </a>
-                                            </li>
-                                        </ul>
-                                    </div>
-                                    <div class="col-12 col-lg">
-                                        <div class="h6 d-flex align-items-center mb-3 mb-lg-4">
-                                            <div class="avatar flex-shrink-0 me-3">
-                                                <span class="avatar-initial rounded bg-label-primary"><i class="icon-base bx bx-image-alt icon-lg"></i></span>
-                                            </div>
-                                            <span class="ps-1">Other</span>
-                                        </div>
-                                        <ul class="nav flex-column">
-                                            <li class="nav-item">
-                                                <a
-                                                    class="nav-link mega-dropdown-link"
-                                                    href="../vertical-menu-template/pages-misc-error.html"
-                                                    target="_blank">
-                                                    <i class="icon-base bx bx-radio-circle me-1"></i>
-                                                    Error
-                                                </a>
-                                            </li>
-                                            <li class="nav-item">
-                                                <a
-                                                    class="nav-link mega-dropdown-link"
-                                                    href="../vertical-menu-template/pages-misc-under-maintenance.html"
-                                                    target="_blank">
-                                                    <i class="icon-base bx bx-radio-circle me-1"></i>
-                                                    Under Maintenance
-                                                </a>
-                                            </li>
-                                            <li class="nav-item">
-                                                <a
-                                                    class="nav-link mega-dropdown-link"
-                                                    href="../vertical-menu-template/pages-misc-comingsoon.html"
-                                                    target="_blank">
-                                                    <i class="icon-base bx bx-radio-circle me-1"></i>
-                                                    Coming Soon
-                                                </a>
-                                            </li>
-                                            <li class="nav-item">
-                                                <a
-                                                    class="nav-link mega-dropdown-link"
-                                                    href="../vertical-menu-template/pages-misc-not-authorized.html"
-                                                    target="_blank">
-                                                    <i class="icon-base bx bx-radio-circle me-1"></i>
-                                                    Not Authorized
-                                                </a>
-                                            </li>
-                                            <li class="nav-item">
-                                                <a
-                                                    class="nav-link mega-dropdown-link"
-                                                    href="../vertical-menu-template/auth-verify-email-basic.html"
-                                                    target="_blank">
-                                                    <i class="icon-base bx bx-radio-circle me-1"></i>
-                                                    Verify Email (Basic)
-                                                </a>
-                                            </li>
-                                            <li class="nav-item">
-                                                <a
-                                                    class="nav-link mega-dropdown-link"
-                                                    href="../vertical-menu-template/auth-verify-email-cover.html"
-                                                    target="_blank">
-                                                    <i class="icon-base bx bx-radio-circle me-1"></i>
-                                                    Verify Email (Cover)
-                                                </a>
-                                            </li>
-                                            <li class="nav-item">
-                                                <a
-                                                    class="nav-link mega-dropdown-link"
-                                                    href="../vertical-menu-template/auth-two-steps-basic.html"
-                                                    target="_blank">
-                                                    <i class="icon-base bx bx-radio-circle me-1"></i>
-                                                    Two Steps (Basic)
-                                                </a>
-                                            </li>
-                                            <li class="nav-item">
-                                                <a
-                                                    class="nav-link mega-dropdown-link"
-                                                    href="../vertical-menu-template/auth-two-steps-cover.html"
-                                                    target="_blank">
-                                                    <i class="icon-base bx bx-radio-circle me-1"></i>
-                                                    Two Steps (Cover)
-                                                </a>
-                                            </li>
-                                        </ul>
-                                    </div>
-                                    <div class="col-lg-4 d-none d-lg-block">
-                                        <div class="bg-body nav-img-col p-2">
-                                            <img
-                                                src="/assets/img/front-pages/misc/nav-item-col-img.png"
-                                                alt="nav item col image"
-                                                class="w-100" />
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
+                            <a class="nav-link fw-medium" href="/sited/test">Realizar Test</a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link fw-medium" href="/admin" target="_blank">Admin</a>
@@ -405,16 +181,24 @@
                     <!-- / Style Switcher-->
 
                     <!-- navbar button: Start -->
-                    <li>
-                        <a href="/iniciar-sesion" class="btn btn-primary">
-                            <span class="tf-icons icon-base bx bx-log-in-circle scaleX-n1-rtl me-md-1"></span>
-                            <span class="d-none d-md-block">Iniciar Sesión</span>
-                        </a>
-                    </li>
+                    <?php if (isset($_SESSION["web_session"]) && $_SESSION["web_session"] != "") { ?>
+                        <li>
+                            <a href="/cerrar-sesion" class="btn btn-primary">
+                                <span class="tf-icons icon-base bx bx-log-in-circle scaleX-n1-rtl me-md-1"></span>
+                                <span class="d-none d-md-block">Cerrar Sesión</span>
+                            </a>
+                        </li>
+                    <?php } else { ?>
+                        <li>
+                            <a href="/iniciar-sesion" class="btn btn-primary">
+                                <span class="tf-icons icon-base bx bx-log-in-circle scaleX-n1-rtl me-md-1"></span>
+                                <span class="d-none d-md-block">Iniciar Sesión</span>
+                            </a>
+                        </li>
+                    <?php } ?>
                     <!-- navbar button: End -->
                 </ul>
                 <!-- Toolbar: End -->
             </div>
         </div>
     </nav>
-    <!-- Navbar: End -->
