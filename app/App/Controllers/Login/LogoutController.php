@@ -63,6 +63,7 @@ class LogoutController extends Controller
         unset($_SESSION['web_r']);
         unset($_SESSION['web_session']);
         unset($_SESSION["web_user"]);
+        unset($_SESSION["web_activo"]);
         return $response
             ->withHeader('Location', base_url())
             ->withStatus(302);

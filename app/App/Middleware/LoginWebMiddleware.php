@@ -35,18 +35,21 @@ class LoginWebMiddleware
                 ->first();
 
             if (!empty($user) && $user['tiempo_expiracion'] > time()) {
+                $_SESSION["web_activo"] = true;
                 $model->update($user['idsesion'], [
                     "tiempo_expiracion" => time() + $_ENV['SESSION_TIME']
                 ]);
                 $response = $handler->handle($request);
                 return $response;
             } else {
+                $_SESSION["web_activo"] = false;
                 $model->update($user['idsesion'], [
                     "activo" => "0"
                 ]);
             }
         }
 
+        $_SESSION["web_activo"] = false;
         $response = new Response();
         return $response
             ->withHeader('Location', base_url() . 'iniciar-sesion')

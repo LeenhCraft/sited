@@ -121,7 +121,7 @@
                         <li class="nav-item">
                             <a class="nav-link fw-medium" aria-current="page" href="/">Inicio</a>
                         </li>
-                        <?php if (isset($_SESSION["web_session"]) && $_SESSION["web_session"] != "") { ?>
+                        <?php if (isset($_SESSION["web_activo"]) && $_SESSION["web_activo"] == true) { ?>
                             <li class="nav-item">
                                 <a class="nav-link fw-medium" href="/sited/test">Realizar Test</a>
                             </li>
@@ -184,7 +184,7 @@
                     <!-- / Style Switcher-->
 
                     <!-- navbar button: Start -->
-                    <?php if (isset($_SESSION["web_session"]) && $_SESSION["web_session"] != "") { ?>
+                    <?php if (isset($_SESSION["web_activo"]) && $_SESSION["web_activo"] == true) { ?>
                         <li>
                             <a href="/cerrar-sesion" class="btn btn-primary">
                                 <span class="tf-icons icon-base bx bx-log-in-circle scaleX-n1-rtl me-md-1"></span>
