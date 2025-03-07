@@ -133,3 +133,86 @@ function getPermisosExtras()
     }
     return $resultado;
 }
+
+use PHPMailer\PHPMailer\PHPMailer;
+use PHPMailer\PHPMailer\SMTP;
+use PHPMailer\PHPMailer\Exception;
+use App\Models\ServerEmail;
+
+function enviarEmail($data, $template)
+{
+    // require __DIR__ . '/vendor/autoload.php';
+
+    //Create an instance; passing `true` enables exceptions
+    $mail = new PHPMailer(true);
+    $objEmail = new ServerEmail();
+
+
+    $dataEmail = $objEmail->leerConfig();
+    if (empty($dataEmail)) {
+        return false;
+    }
+
+    $emailDestino = $data['email'];
+    $asunto = $data['asunto'];
+    $nombreDestino = $data['nombre'];
+    ob_start();
+    require_once("../app/Resources/Email/" . $template . ".php");
+    $mensaje = ob_get_clean();
+    $msg = [];
+
+
+    try {
+        //Server settings
+        // $mail->SMTPDebug = local: 0, produccion: 1;
+        $mail->SMTPDebug = SMTP::DEBUG_OFF;                      //Enable verbose debug output
+        $mail->isSMTP();                                            //Send using SMTP
+        $mail->Host       = $dataEmail['em_host'];                     //Set the SMTP server to send through
+        $mail->SMTPAuth   = true;                                   //Enable SMTP authentication
+        $mail->Username   = $dataEmail['em_usermail'];                 //SMTP username
+        $mail->Password   = $dataEmail['em_pass'];                          //SMTP password
+        $mail->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS;          //Enable implicit TLS encryption
+        $mail->Port       = $dataEmail['em_port'];                                   //TCP port to connect to; use 587 if you have set `SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS`
+
+        //Recipients
+        $mail->setFrom('servicios@leenhcraft.com', $_ENV['APP_NAME']);
+        $mail->addAddress($emailDestino, $nombreDestino);     //Add a recipient
+        // $mail->addAddress("2018100486@ucss.pe", "ucss");     //Add a recipient
+        // $mail->addAddress('ellen@example.com');               //Name is optional
+        // $mail->addReplyTo('info@example.com', 'Information');
+        // $mail->addCC('cc@example.com');
+        // $mail->addBCC('bcc@example.com');
+        // $mail->addCC("2018100486@ucss.pe", "ucss");
+        // $mail->addBCC("2018100486@ucss.pe", "ucss");
+
+        //Attachments - archivos adjuntos
+        // $mail->addAttachment('/var/tmp/file.tar.gz');         //Add attachments
+        // $mail->addAttachment('/tmp/image.jpg', 'new.jpg');    //Optional name
+
+        //Content - mensaje
+        $mail->isHTML(true);                                  //Set email format to HTML
+        $mail->Subject = $asunto;
+        $mail->Body    = $mensaje;
+        $mail->AltBody = 'leenhcraft.com';
+        $mail->CharSet = PHPMailer::CHARSET_UTF8;
+        //To load the French version
+        $mail->setLanguage('es', 'libraries/phpmailer/languaje');
+
+        $mail->send();
+        return true;
+    } catch (Exception $e) {
+        // echo "Message could not be sent. Mailer Error: {$mail->ErrorInfo}";
+        // $msg['status'] = true;
+        // $msg['text'] = "No se pudo enviar el mensaje. Error de correo: {$mail->ErrorInfo}";
+        return false;
+    }
+    return $msg;
+}
+
+function generateSignature($token, $timestamp)
+{
+    $secret = "my_secret_key"; // Aquí deberías usar tu propia clave secreta
+    $data = $timestamp . '.' . $token; // Concatenamos el timestamp y el token
+    $signature = hash_hmac('sha256', $data, $secret); // Generamos la firma con HMAC-SHA256
+    return $signature;
+}

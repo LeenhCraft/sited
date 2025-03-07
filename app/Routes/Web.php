@@ -11,6 +11,7 @@ use Slim\Routing\RouteCollectorProxy;
 use App\Controllers\Home\HomeController;
 use App\Controllers\Home\LoginController;
 use App\Controllers\Home\RegistrarseController;
+use App\Controllers\Home\verifyController;
 use App\Controllers\Login\LogoutController;
 
 // Middlewares
@@ -35,6 +36,8 @@ $app->group('/registrarse', function (RouteCollectorProxy $registrarse) {
     $registrarse->get('', RegistrarseController::class . ':index')->add(WebMiddleware::class);
     $registrarse->post('/save', RegistrarseController::class . ':store');
 });
+
+$app->get('/verify-email/{url}', verifyController::class . ':index');
 
 $app->group('/perfil', function (RouteCollectorProxy $perfil) {
     $perfil->get('', PerfilController::class . ':index');

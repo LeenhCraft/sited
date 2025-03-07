@@ -3,6 +3,7 @@
 namespace App\Controllers\Home;
 
 use App\Core\Controller;
+use App\Helpers\TokenGenerator;
 use App\Models\TableModel;
 use Exception;
 
@@ -132,13 +133,18 @@ class RegistrarseController extends Controller
                 $idpersona = $existePersona['idpersona'];
             }
 
+            $tiempoExpiracion = time() + 24 * 60 * 60;
+            // $tokenGenerator = new TokenGenerator(32, $tiempoExpiracion, $data["email"] . '_');
+            // $token = $tokenGenerator->generate();
+            $token = token();
+
             // creo el usuario
             $registroUsuario = $modelUsuarios->create([
                 'idrol' => "4", // usuario web
                 'idpersona' => $idpersona,
                 'usu_usuario' => $data["username"],
                 'usu_pass' => password_hash($data["password"], PASSWORD_DEFAULT),
-                'usu_token' => token(),
+                'usu_token' => $token,
                 'usu_activo' => "0",
                 'usu_estado' => "1",
                 'usu_primera' => "1",
@@ -150,6 +156,13 @@ class RegistrarseController extends Controller
             if (empty($registroUsuario)) {
                 return $this->respondWithError($response, "Error al registrar el usuario");
             }
+
+            $this->sendEmail([
+                "nombre" => $data['nombre_completo'],
+                "email" => $data['email'],
+                "token" => $token,
+                "expires" => $tiempoExpiracion,
+            ]);
 
             return $this->respondWithJson($response, [
                 "status" => true,
@@ -178,5 +191,24 @@ class RegistrarseController extends Controller
             if (empty($data[$field])) return false;
         }
         return true;
+    }
+
+    public function sendEmail($data = [])
+    {
+        if (empty($data)) return false;
+
+        $url_recovery = base_url() . 'verify-email/' . $data["token"] .
+            // '?email=' . $data["email"] .
+            '?expires=' . $data["expires"] .
+            '&signature=' . generateSignature($data["token"], $data["expires"]);
+
+        $dataUsuario = array(
+            'nombre' => $data['nombre'],
+            'email' => $data["email"],
+            'asunto' => "Confirme su dirección de correo electrónico. " . date("d/m/Y H:i"),
+            'url_recovery' => $url_recovery
+        );
+        $response_email = enviarEmail($dataUsuario, 'Confirmacion');
+        return $response_email;
     }
 }

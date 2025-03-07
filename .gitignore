@@ -6,3 +6,4 @@ public_html/assets
 modelo-ia/dataset
 modelo-ia/procesados
 modelo-ia/modelos-entrenados
+app/logs/buscardoc.log
