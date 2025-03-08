@@ -31,7 +31,7 @@ class PerfilController extends Controller
                 "u.ultima_actualizacion"
             )
             ->join("sis_personal p", "p.idpersona", "u.idpersona")
-            ->join("sd_pacientes pa", "pa.dni", "p.per_dni")
+            ->leftJoin("sd_pacientes pa", "pa.dni", "p.per_dni")
             ->where("u.idusuario", $_SESSION["web_id"])
             ->first();
 
