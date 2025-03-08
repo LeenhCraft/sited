@@ -78,10 +78,25 @@
 <!-- Page JS -->
 <!-- <script src="/assets/js/front-page-landing.js"></script> -->
 
+<script>
+    const Toast = Swal.mixin({
+        toast: true,
+        position: "top-end",
+        showConfirmButton: false,
+        showCloseButton: true,
+        timer: 5000,
+        timerProgressBar: true,
+        didOpen: (toast) => {
+            toast.addEventListener("mouseenter", Swal.stopTimer);
+            toast.addEventListener("mouseleave", Swal.resumeTimer);
+        },
+    });
+</script>
+
 <?php
 if (isset($data['js']) && !empty($data['js'])) {
     for ($i = 0; $i < count($data['js']); $i++) {
-        echo '<script src="' . $data['js'][$i] . '"></script>';
+        echo '<script src="' . $data['js'][$i] . '"></script>' . PHP_EOL;
     }
 }
 ?>
