@@ -138,54 +138,77 @@
 <!-- Modal Editar Perfil -->
 <div class="modal fade" id="editProfileModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" style="display: none;" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Editar Perfil</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        <form id="editProfileForm">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Editar Perfil</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row g-3">
+                        <div class="col-12 form-control-validation">
+                            <label for="edit-dni" class="form-label">DNI</label>
+                            <input
+                                type="number"
+                                class="form-control"
+                                id="edit-dni"
+                                name="dni"
+                                disabled
+                                value="<?php echo isset($data['user']['dni']) ? $data['user']['dni'] : ''; ?>">
+                            <small class="text-primary">
+                                Para cambiar tu DNI, por favor contacta con el administrador.
+                            </small>
+                        </div>
+
+                        <div class="col-12 form-control-validation">
+                            <label for="edit-name" class="form-label">Nombre completo</label>
+                            <input type="text" class="form-control" id="edit-name" name="nombre" value="<?php echo isset($data['user']['nombre']) ? $data['user']['nombre'] : ''; ?>">
+                        </div>
+
+                        <div class="col-md-6 form-control-validation">
+                            <label for="edit-age" class="form-label">Edad</label>
+                            <input
+                                type="number"
+                                class="form-control"
+                                id="edit-age"
+                                name="edad"
+                                min="0"
+                                max="120"
+                                value="<?php echo isset($data['user']['edad']) ? $data['user']['edad'] : ''; ?>">
+                        </div>
+
+                        <div class="col-md-6 form-control-validation">
+                            <label for="edit-gender" class="form-label">Sexo</label>
+                            <select class="form-select" id="edit-gender" name="sexo">
+                                <option value="">Seleccionar</option>
+                                <option value="M" <?php echo (isset($data['user']['sexo']) && $data['user']['sexo'] == 'M') ? 'selected' : ''; ?>>Masculino</option>
+                                <option value="F" <?php echo (isset($data['user']['sexo']) && $data['user']['sexo'] == 'F') ? 'selected' : ''; ?>>Femenino</option>
+                                <option value="O" <?php echo (isset($data['user']['sexo']) && $data['user']['sexo'] == 'O') ? 'selected' : ''; ?>>Otro</option>
+                            </select>
+                        </div>
+
+                        <div class="col-md-6 form-control-validation">
+                            <label for="edit-weight" class="form-label">Peso (kg)</label>
+                            <input type="number" step="0.1" class="form-control" id="edit-weight" name="peso" value="<?php echo isset($data['user']['peso']) ? $data['user']['peso'] : ''; ?>">
+                        </div>
+
+                        <div class="col-md-6 form-control-validation">
+                            <label for="edit-height" class="form-label">Altura (cm)</label>
+                            <input type="number" class="form-control" id="edit-height" name="altura" value="<?php echo isset($data['user']['altura']) ? $data['user']['altura'] : ''; ?>">
+                        </div>
+
+                        <div class="col-12 form-control-validation">
+                            <label for="edit-email" class="form-label">Correo electrónico</label>
+                            <input type="email" class="form-control" id="edit-email" name="email" value="<?php echo isset($data['user']['email']) ? $data['user']['email'] : ''; ?>">
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary" id="saveProfileBtn">Guardar cambios</button>
+                </div>
             </div>
-            <div class="modal-body">
-                <form id="editProfileForm" class="row g-3">
-                    <div class="col-12">
-                        <label for="edit-name" class="form-label">Nombre completo</label>
-                        <input type="text" class="form-control" id="edit-name" name="nombre" value="<?php echo isset($data['user']['nombre']) ? $data['user']['nombre'] : ''; ?>">
-                    </div>
-
-                    <div class="col-md-6">
-                        <label for="edit-age" class="form-label">Edad</label>
-                        <input type="number" class="form-control" id="edit-age" name="edad" value="<?php echo isset($data['user']['edad']) ? $data['user']['edad'] : ''; ?>">
-                    </div>
-
-                    <div class="col-md-6">
-                        <label for="edit-gender" class="form-label">Sexo</label>
-                        <select class="form-select" id="edit-gender" name="sexo">
-                            <option value="">Seleccionar</option>
-                            <option value="M" <?php echo (isset($data['user']['sexo']) && $data['user']['sexo'] == 'M') ? 'selected' : ''; ?>>Masculino</option>
-                            <option value="F" <?php echo (isset($data['user']['sexo']) && $data['user']['sexo'] == 'F') ? 'selected' : ''; ?>>Femenino</option>
-                            <option value="O" <?php echo (isset($data['user']['sexo']) && $data['user']['sexo'] == 'O') ? 'selected' : ''; ?>>Otro</option>
-                        </select>
-                    </div>
-
-                    <div class="col-md-6">
-                        <label for="edit-weight" class="form-label">Peso (kg)</label>
-                        <input type="number" step="0.1" class="form-control" id="edit-weight" name="peso" value="<?php echo isset($data['user']['peso']) ? $data['user']['peso'] : ''; ?>">
-                    </div>
-
-                    <div class="col-md-6">
-                        <label for="edit-height" class="form-label">Altura (cm)</label>
-                        <input type="number" class="form-control" id="edit-height" name="altura" value="<?php echo isset($data['user']['altura']) ? $data['user']['altura'] : ''; ?>">
-                    </div>
-
-                    <div class="col-12">
-                        <label for="edit-email" class="form-label">Correo electrónico</label>
-                        <input type="email" class="form-control" id="edit-email" name="email" value="<?php echo isset($data['user']['email']) ? $data['user']['email'] : ''; ?>">
-                    </div>
-                </form>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
-                <button type="button" class="btn btn-primary" id="saveProfileBtn">Guardar cambios</button>
-            </div>
-        </div>
+        </form>
     </div>
 </div>
 
@@ -193,41 +216,43 @@
 <div class="modal fade" id="changePasswordModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" style="display: none;" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Cambiar Contraseña</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <form id="changePasswordForm" class="row g-3">
-                    <div class="col-12 form-password-toggle">
-                        <label class="form-label" for="current-password">Contraseña actual</label>
-                        <div class="input-group input-group-merge">
-                            <input type="password" class="form-control" id="current-password" name="currentPassword" placeholder="&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;">
-                            <span class="input-group-text cursor-pointer"><i class="icon-base bx bx-hide"></i></span>
+            <form id="changePasswordForm">
+                <div class="modal-header">
+                    <h5 class="modal-title">Cambiar Contraseña</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row g-3">
+                        <div class="col-12 form-password-toggle form-control-validation">
+                            <label class="form-label" for="current-password">Contraseña actual</label>
+                            <div class="input-group input-group-merge">
+                                <input type="password" class="form-control" id="current-password" name="currentPassword" placeholder="&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;">
+                                <span class="input-group-text cursor-pointer"><i class="icon-base bx bx-hide"></i></span>
+                            </div>
                         </div>
-                    </div>
 
-                    <div class="col-12 form-password-toggle">
-                        <label class="form-label" for="new-password">Nueva contraseña</label>
-                        <div class="input-group input-group-merge">
-                            <input type="password" class="form-control" id="new-password" name="newPassword" placeholder="&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;">
-                            <span class="input-group-text cursor-pointer"><i class="icon-base bx bx-hide"></i></span>
+                        <div class="col-12 form-password-toggle form-control-validation">
+                            <label class="form-label" for="new-password">Nueva contraseña</label>
+                            <div class="input-group input-group-merge">
+                                <input type="password" class="form-control" id="new-password" name="newPassword" placeholder="&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;">
+                                <span class="input-group-text cursor-pointer"><i class="icon-base bx bx-hide"></i></span>
+                            </div>
                         </div>
-                    </div>
 
-                    <div class="col-12 form-password-toggle">
-                        <label class="form-label" for="confirm-password">Confirmar nueva contraseña</label>
-                        <div class="input-group input-group-merge">
-                            <input type="password" class="form-control" id="confirm-password" name="confirmPassword" placeholder="&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;">
-                            <span class="input-group-text cursor-pointer"><i class="icon-base bx bx-hide"></i></span>
+                        <div class="col-12 form-password-toggle form-control-validation">
+                            <label class="form-label" for="confirm-password">Confirmar nueva contraseña</label>
+                            <div class="input-group input-group-merge">
+                                <input type="password" class="form-control" id="confirm-password" name="confirmPassword" placeholder="&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;">
+                                <span class="input-group-text cursor-pointer"><i class="icon-base bx bx-hide"></i></span>
+                            </div>
                         </div>
                     </div>
-                </form>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
-                <button type="button" class="btn btn-primary" id="savePasswordBtn">Cambiar contraseña</button>
-            </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary" id="savePasswordBtn">Cambiar contraseña</button>
+                </div>
+            </form>
         </div>
     </div>
 </div>
@@ -270,153 +295,3 @@
 </div>
 
 <?php footer_web('Template.Footer', $data); ?>
-<!-- Script para manejar las acciones del perfil -->
-<script>
-    document.addEventListener("DOMContentLoaded", function() {
-        // Guardar cambios de perfil
-        document.getElementById('saveProfileBtn').addEventListener('click', function() {
-            const form = document.getElementById('editProfileForm');
-            const formData = new FormData(form);
-
-            fetch('/perfil/actualizar', {
-                    method: 'POST',
-                    body: formData
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.status) {
-                        Toast.fire({
-                            icon: 'success',
-                            title: 'Perfil actualizado con éxito'
-                        });
-
-                        // Actualizar los datos en la vista
-                        document.getElementById('profile-name').textContent = formData.get('name');
-                        document.getElementById('profile-full-name').textContent = formData.get('name');
-                        document.getElementById('profile-age').textContent = formData.get('age') + ' años';
-                        document.getElementById('profile-gender').textContent = formData.get('gender');
-                        document.getElementById('profile-email').textContent = formData.get('email');
-                        document.getElementById('profile-weight').textContent = formData.get('weight') + ' kg';
-                        document.getElementById('profile-height').textContent = formData.get('height') + ' cm';
-
-                        // Calcular IMC si hay peso y altura
-                        if (formData.get('weight') && formData.get('height')) {
-                            const weightKg = parseFloat(formData.get('weight'));
-                            const heightM = parseFloat(formData.get('height')) / 100;
-                            const bmi = weightKg / (heightM * heightM);
-                            document.getElementById('profile-bmi').textContent = bmi.toFixed(2);
-                        }
-
-                        // Cerrar modal
-                        const modal = bootstrap.Modal.getInstance(document.getElementById('editProfileModal'));
-                        modal.hide();
-                    } else {
-                        Toast.fire({
-                            icon: 'error',
-                            title: data.message || 'Error al actualizar el perfil'
-                        });
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    Toast.fire({
-                        icon: 'error',
-                        title: 'Error al comunicarse con el servidor'
-                    });
-                });
-        });
-
-        // Cambiar contraseña
-        document.getElementById('savePasswordBtn').addEventListener('click', function() {
-            const form = document.getElementById('changePasswordForm');
-            const formData = new FormData(form);
-
-            // Validar que las contraseñas coincidan
-            if (formData.get('newPassword') !== formData.get('confirmPassword')) {
-                Toast.fire({
-                    icon: 'error',
-                    title: 'Las contraseñas no coinciden'
-                });
-                return;
-            }
-
-            fetch('/perfil/cambiar-password', {
-                    method: 'POST',
-                    body: formData
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.status) {
-                        Toast.fire({
-                            icon: 'success',
-                            title: 'Contraseña actualizada con éxito'
-                        });
-
-                        // Limpiar formulario
-                        form.reset();
-
-                        // Cerrar modal
-                        const modal = bootstrap.Modal.getInstance(document.getElementById('changePasswordModal'));
-                        modal.hide();
-                    } else {
-                        Toast.fire({
-                            icon: 'error',
-                            title: data.message || 'Error al actualizar la contraseña'
-                        });
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    Toast.fire({
-                        icon: 'error',
-                        title: 'Error al comunicarse con el servidor'
-                    });
-                });
-        });
-
-        // Eliminar cuenta
-        document.getElementById('deleteAccountBtn').addEventListener('click', function() {
-            const form = document.getElementById('deleteAccountForm');
-            const formData = new FormData(form);
-
-            // Validar que el checkbox esté marcado
-            if (!document.getElementById('confirm-deletion').checked) {
-                Toast.fire({
-                    icon: 'warning',
-                    title: 'Debes confirmar que deseas eliminar tu cuenta'
-                });
-                return;
-            }
-
-            fetch('/perfil/eliminar', {
-                    method: 'POST',
-                    body: formData
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.status) {
-                        Swal.fire({
-                            title: 'Cuenta eliminada',
-                            text: 'Tu cuenta ha sido eliminada correctamente. Serás redirigido en breve.',
-                            icon: 'success',
-                            confirmButtonText: 'Entendido'
-                        }).then(() => {
-                            window.location.href = '/iniciar-sesion';
-                        });
-                    } else {
-                        Toast.fire({
-                            icon: 'error',
-                            title: data.message || 'Error al eliminar la cuenta'
-                        });
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    Toast.fire({
-                        icon: 'error',
-                        title: 'Error al comunicarse con el servidor'
-                    });
-                });
-        });
-    });
-</script>

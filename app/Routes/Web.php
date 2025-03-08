@@ -41,8 +41,10 @@ $app->get('/verify-email/{url}', verifyController::class . ':index');
 
 $app->group('/perfil', function (RouteCollectorProxy $perfil) {
     $perfil->get('', PerfilController::class . ':index');
-    $perfil->post('/actualizar', PerfilController::class . ':update');
     $perfil->get('/mis-tests', PerfilController::class . ':indexLista');
+    $perfil->post('/actualizar', PerfilController::class . ':update');
+    $perfil->post('/cambiar-passwords', PerfilController::class . ':updatePassword');
+    $perfil->post('/eliminar', PerfilController::class . ':deleteAccount');
 })->add(LoginWebMiddleware::class);
 
 

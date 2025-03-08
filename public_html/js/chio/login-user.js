@@ -88,7 +88,7 @@ document.addEventListener("DOMContentLoaded", function () {
               // Mostrar mensaje de éxito
               Swal.fire({
                 icon: "success",
-                title: "Registro exitoso",
+                title: "Inicio de sesión exitoso",
                 text: data.message,
               }).then((result) => {
                 /* Read more about isConfirmed, isDenied below */
@@ -103,15 +103,19 @@ document.addEventListener("DOMContentLoaded", function () {
                 window.location.href = "/perfil";
               }, 3000);
             } else {
+              submitBtn.innerHTML = originalBtnText;
+              submitBtn.disabled = false;
               // Mostrar mensaje de error
               Swal.fire({
                 icon: "warning",
-                title: "Error al registrar",
+                title: "Inicio de sesión fallido",
                 text: data.message,
               });
             }
           })
           .catch((error) => {
+            submitBtn.innerHTML = originalBtnText;
+            submitBtn.disabled = false;
             console.error("Error al enviar el formulario:", error);
             alert("Error al procesar el registro: " + error.message);
           })
