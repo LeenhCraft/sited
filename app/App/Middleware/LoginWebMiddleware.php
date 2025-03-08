@@ -29,9 +29,13 @@ class LoginWebMiddleware
         $model->setId("idsesion");
         if ($userId && $sessionToken) {
             // Verificar si el token de sesión coincide con el almacenado en la base de datos
-            $user = $model->where("idusuario", $userId)
-                ->where("session_token", $sessionToken)
-                ->where("activo", "1")
+            $user = $model
+                ->join("sis_usuarios", "sis_sesiones.idusuario", "sis_usuarios.idusuario")
+                ->where("sis_usuarios.usu_activo", "1")
+                ->where("sis_usuarios.usu_estado", "1")
+                ->where("sis_sesiones.idusuario", $userId)
+                ->where("sis_sesiones.session_token", $sessionToken)
+                ->where("sis_sesiones.activo", "1")
                 ->first();
 
             if (!empty($user) && $user['tiempo_expiracion'] > time()) {
@@ -43,7 +47,7 @@ class LoginWebMiddleware
                 return $response;
             } else {
                 $_SESSION["web_activo"] = false;
-                $model->update($user['idsesion'], [
+                $model->update($user['idsesion'] ?? "0", [
                     "activo" => "0"
                 ]);
             }

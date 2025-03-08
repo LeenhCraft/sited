@@ -30,9 +30,12 @@ class WebMiddleware
             $model->setTable("sis_sesiones");
             $model->setId("idsesion");
             $user = $model
-                ->where("idusuario", $userId)
-                ->where("session_token", $sessionToken)
-                ->where("activo", "1")
+                ->join("sis_usuarios", "sis_sesiones.idusuario", "sis_usuarios.idusuario")
+                ->where("sis_usuarios.usu_activo", "1")
+                ->where("sis_usuarios.usu_estado", "1")
+                ->where("sis_sesiones.idusuario", $userId)
+                ->where("sis_sesiones.session_token", $sessionToken)
+                ->where("sis_sesiones.activo", "1")
                 ->first();
 
             if (!empty($user)) {
