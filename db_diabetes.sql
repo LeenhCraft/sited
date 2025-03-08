@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Servidor: localhost:3306
--- Tiempo de generación: 06-03-2025 a las 23:24:25
+-- Tiempo de generación: 08-03-2025 a las 05:40:04
 -- Versión del servidor: 8.0.30
 -- Versión de PHP: 8.1.10
 
@@ -503,7 +503,7 @@ CREATE TABLE `sis_personal` (
 --
 
 INSERT INTO `sis_personal` (`idpersona`, `per_dni`, `per_nombre`, `per_celular`, `per_email`, `per_direcc`, `per_foto`, `per_estado`, `per_fecha`) VALUES
-(1, 75933129, 'desarrollador', 987654321, 'hackingleenh@gmail.com', '', NULL, 1, '2022-07-22 01:09:20');
+(1, 75933129, 'BENITES LOJA, ROCIO ISABEL', 987654321, 'rocioisabelbenitesloja@gmail.com', '', NULL, 1, '2022-07-22 01:09:20');
 
 -- --------------------------------------------------------
 
@@ -568,6 +568,32 @@ INSERT INTO `sis_rol` (`idrol`, `rol_cod`, `rol_nombre`, `rol_descripcion`, `rol
 -- --------------------------------------------------------
 
 --
+-- Estructura de tabla para la tabla `sis_server_email`
+--
+
+CREATE TABLE `sis_server_email` (
+  `idserveremail` int NOT NULL,
+  `em_host` varchar(200) CHARACTER SET utf8mb3 COLLATE utf8mb3_unicode_ci NOT NULL,
+  `em_usermail` varchar(200) CHARACTER SET utf8mb3 COLLATE utf8mb3_unicode_ci NOT NULL,
+  `em_pass` varchar(200) CHARACTER SET utf8mb3 COLLATE utf8mb3_unicode_ci NOT NULL,
+  `em_port` int NOT NULL,
+  `em_estado` tinyint(1) NOT NULL DEFAULT '1',
+  `em_default` tinyint(1) DEFAULT NULL,
+  `em_fupdate` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `em_fecha` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_unicode_ci;
+
+--
+-- Volcado de datos para la tabla `sis_server_email`
+--
+
+INSERT INTO `sis_server_email` (`idserveremail`, `em_host`, `em_usermail`, `em_pass`, `em_port`, `em_estado`, `em_default`, `em_fupdate`, `em_fecha`) VALUES
+(1, 'mail.leenhcraft.com', 'servicios@leenhcraft.com', 'DJ-leenh-#1', 465, 1, 1, '2022-05-06 22:29:56', '2022-03-19 23:12:56'),
+(2, 'smtp.gmail.com', '2018100486facke@gmail.com', 'bteaasmagqeaiyax', 465, 1, 0, '2022-03-19 23:25:14', '2022-03-19 23:25:14');
+
+-- --------------------------------------------------------
+
+--
 -- Estructura de tabla para la tabla `sis_sesiones`
 --
 
@@ -580,13 +606,6 @@ CREATE TABLE `sis_sesiones` (
   `tiempo_expiracion` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
   `activo` tinyint(1) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
---
--- Volcado de datos para la tabla `sis_sesiones`
---
-
-INSERT INTO `sis_sesiones` (`idsesion`, `idusuario`, `session_token`, `ip`, `fecha_registro`, `tiempo_expiracion`, `activo`) VALUES
-(1, 1, '95320707f7a307ccd65778e842ecc8e4b58c4e8a27349bace19f6a71e43ac73b7b0d70ae1c1f6823', '::1', '2025-03-06 18:22:05', '1741307009', 1);
 
 -- --------------------------------------------------------
 
@@ -764,6 +783,12 @@ ALTER TABLE `sis_rol`
   ADD PRIMARY KEY (`idrol`);
 
 --
+-- Indices de la tabla `sis_server_email`
+--
+ALTER TABLE `sis_server_email`
+  ADD PRIMARY KEY (`idserveremail`);
+
+--
 -- Indices de la tabla `sis_sesiones`
 --
 ALTER TABLE `sis_sesiones`
@@ -849,7 +874,7 @@ ALTER TABLE `sis_acciones`
 -- AUTO_INCREMENT de la tabla `sis_centinela`
 --
 ALTER TABLE `sis_centinela`
-  MODIFY `idcentinela` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9060;
+  MODIFY `idcentinela` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9460;
 
 --
 -- AUTO_INCREMENT de la tabla `sis_menus`
@@ -873,7 +898,7 @@ ALTER TABLE `sis_permisos_extras`
 -- AUTO_INCREMENT de la tabla `sis_personal`
 --
 ALTER TABLE `sis_personal`
-  MODIFY `idpersona` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `idpersona` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT de la tabla `sis_recursos`
@@ -888,10 +913,16 @@ ALTER TABLE `sis_rol`
   MODIFY `idrol` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
+-- AUTO_INCREMENT de la tabla `sis_server_email`
+--
+ALTER TABLE `sis_server_email`
+  MODIFY `idserveremail` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+
+--
 -- AUTO_INCREMENT de la tabla `sis_sesiones`
 --
 ALTER TABLE `sis_sesiones`
-  MODIFY `idsesion` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `idsesion` int NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT de la tabla `sis_submenus`
@@ -903,7 +934,7 @@ ALTER TABLE `sis_submenus`
 -- AUTO_INCREMENT de la tabla `sis_usuarios`
 --
 ALTER TABLE `sis_usuarios`
-  MODIFY `idusuario` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `idusuario` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
