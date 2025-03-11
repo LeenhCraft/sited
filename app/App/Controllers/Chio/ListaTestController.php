@@ -115,15 +115,22 @@ class ListaTestController extends Controller
         $testId = $args['id'];
 
         // Obtener datos del test
-        $test = $this->testModel->find($testId);
-        if (!$test) {
+        $testData = $this->testModel->find($testId);
+        if (!$testData) {
             return $this->respondWithJson($response, [
                 'status' => false,
                 'message' => 'Test no encontrado'
             ]);
         }
 
-        $paciente = $this->pacienteModel->find($test['idpaciente']);
+        $userData = $this->pacienteModel
+            ->select(
+                "dni",
+                "nombre",
+                "edad",
+                "sexo"
+            )
+            ->find($testData['idpaciente']);
         $preguntas = $this->testModel->getTestPreguntas($testId);
 
         // Crear instancia mPDF
@@ -137,144 +144,17 @@ class ListaTestController extends Controller
         ]);
 
         // Añadir estilos CSS
-        $stylesheet = file_get_contents('/css/pdf-styles.css');
+        $stylesheet = file_get_contents('./css/boxicons.css');
         $mpdf->WriteHTML($stylesheet, \Mpdf\HTMLParserMode::HEADER_CSS);
 
-        // Encabezado
-        $html = '<div class="header">
-            <h1>Reporte de Test de Diabetes</h1>
-            <p>Fecha de generación: ' . date('d/m/Y H:i:s') . '</p>
-        </div>';
-
-        // Información del paciente
-        $html .= '<div class="section">
-            <h2>Información del Paciente</h2>
-            <table class="info-table">
-                <tr>
-                    <th>Nombre:</th>
-                    <td>' . $paciente['nombre'] . '</td>
-                    <th>DNI:</th>
-                    <td>' . $paciente['dni'] . '</td>
-                </tr>
-                <tr>
-                    <th>Edad:</th>
-                    <td>' . $paciente['edad'] . ' años</td>
-                    <th>Sexo:</th>
-                    <td>' . ($paciente['sexo'] === 'M' ? 'Masculino' : 'Femenino') . '</td>
-                </tr>
-                <tr>
-                    <th>Peso:</th>
-                    <td>' . $test['peso'] . ' kg</td>
-                    <th>Altura:</th>
-                    <td>' . $test['altura'] . ' m</td>
-                </tr>
-                <tr>
-                    <th>IMC:</th>
-                    <td>' . number_format($test['imc'], 2) . ' kg/m²</td>
-                    <th>Fecha del test:</th>
-                    <td>' . date('d/m/Y H:i', strtotime($test['fecha_hora'])) . '</td>
-                </tr>
-            </table>
-        </div>';
-
-        // Resultados del análisis
-        $html .= '<div class="section">
-            <h2>Resultados del Análisis</h2>';
-
-        if ($test['respuesta_analisis']) {
-            $analisis = json_decode($test['respuesta_analisis'], true);
-
-            // Determinar clase de riesgo para el color
-            $riesgoClass = 'riesgo-bajo';
-            if ($analisis['clasificacion'] === 'Alto') {
-                $riesgoClass = 'riesgo-alto';
-            } else if ($analisis['clasificacion'] === 'Moderado') {
-                $riesgoClass = 'riesgo-moderado';
-            }
-
-            $html .= '<div class="resultado-box ' . $riesgoClass . '">
-                <h3>Riesgo de Diabetes: ' . $analisis['clasificacion'] . '</h3>
-                <div class="probabilidades">
-                    <div class="prob-item">
-                        <span class="prob-label">Riesgo Bajo:</span>
-                        <span class="prob-value">' . number_format($analisis['probabilidades']['bajo'], 2) . '%</span>
-                    </div>
-                    <div class="prob-item">
-                        <span class="prob-label">Riesgo Moderado:</span>
-                        <span class="prob-value">' . number_format($analisis['probabilidades']['moderado'], 2) . '%</span>
-                    </div>
-                    <div class="prob-item">
-                        <span class="prob-label">Riesgo Alto:</span>
-                        <span class="prob-value">' . number_format($analisis['probabilidades']['alto'], 2) . '%</span>
-                    </div>
-                </div>
-            </div>';
-
-            // Recomendaciones
-            if (isset($analisis['recomendaciones']) && !empty($analisis['recomendaciones'])) {
-                $html .= '<div class="recomendaciones">
-                    <h4>Recomendaciones:</h4>
-                    <ul>';
-
-                foreach ($analisis['recomendaciones'] as $recomendacion) {
-                    $html .= '<li>' . $recomendacion . '</li>';
-                }
-
-                $html .= '</ul>
-                </div>';
-            }
-        } else {
-            $html .= '<p>No hay análisis disponible para este test.</p>';
-        }
-
-        $html .= '</div>';
-
-        // Detalle de respuestas
-        $html .= '<div class="section">
-            <h2>Detalle de Respuestas</h2>
-            <table class="data-table">
-                <thead>
-                    <tr>
-                        <th>#</th>
-                        <th>Pregunta</th>
-                        <th>Respuesta</th>
-                        <th>Nivel</th>
-                    </tr>
-                </thead>
-                <tbody>';
-
-        foreach ($preguntas as $index => $pregunta) {
-            $metadatos = json_decode($pregunta['respuesta_metadata'], true);
-            $nivel = $metadatos['valor_seleccionado'];
-
-            $nivelText = 'Bajo';
-            $nivelClass = 'nivel-bajo';
-
-            if ($nivel === 2) {
-                $nivelText = 'Alto';
-                $nivelClass = 'nivel-alto';
-            } else if ($nivel === 1) {
-                $nivelText = 'Medio';
-                $nivelClass = 'nivel-medio';
-            }
-
-            $html .= '<tr>
-                <td>' . ($index + 1) . '</td>
-                <td>' . $pregunta['titulo'] . '</td>
-                <td>' . $pregunta['respuesta_usuario'] . '</td>
-                <td><span class="nivel ' . $nivelClass . '">' . $nivelText . '</span></td>
-            </tr>';
-        }
-
-        $html .= '</tbody>
-            </table>
-        </div>';
-
-        // Pie de página
-        $html .= '<div class="footer">
-            <p>Este reporte es generado automáticamente por el sistema de detección de diabetes.</p>
-            <p>ID de Test: ' . $test['idtest'] . '</p>
-        </div>';
+        // Datos del test
+        $html = $this->view('Pdf.TestPdf', [
+            "test" => [
+                'user' => $userData,
+                'test' => $testData,
+                'preguntas' => $preguntas
+            ]
+        ]);
 
         // Escribir HTML
         $mpdf->WriteHTML($html);
@@ -283,7 +163,7 @@ class ListaTestController extends Controller
         $pdfContent = $mpdf->Output('', 'S');
 
         // Establecer headers para descarga
-        $fileName = 'Test_Diabetes_' . $paciente['dni'] . '_' . date('Ymd') . '.pdf';
+        $fileName = 'Test_Diabetes_' . $userData['dni'] . '_' . date('Ymd') . '.pdf';
 
         $response = $response->withHeader('Content-Type', 'application/pdf')
             ->withHeader('Content-Disposition', 'inline; filename="' . $fileName . '"')

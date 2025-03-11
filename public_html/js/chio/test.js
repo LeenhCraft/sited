@@ -228,7 +228,7 @@
 
         // Guardar los valores
         datosPaciente.peso = peso;
-        datosPaciente.altura = alturaEnMetros;
+        datosPaciente.altura = altura;
         datosPaciente.imc = imc;
 
         // Actualizar interfaz
@@ -826,6 +826,8 @@
     </div>
   `;
 
+    document.getElementById("btn-imprimir").dataset.id = resultadoData.id_test;
+
     // Inicializar el gráfico después de que el DOM esté listo
     setTimeout(() => {
       renderizarGrafico(resultadoData);
@@ -1003,48 +1005,9 @@
    * Función para imprimir los resultados
    */
   function imprimirResultados() {
-    // Preparar contenido para imprimir
-    const contenidoImprimir = document.getElementById(
-      "resultado-contenido"
-    ).innerHTML;
-
-    // Crear ventana de impresión
-    const ventanaImpresion = window.open("", "_blank");
-    ventanaImpresion.document.write(`
-      <!DOCTYPE html>
-      <html>
-      <head>
-        <title>Resultados Test de Diabetes</title>
-        <link rel="stylesheet" href="/css/bootstrap.min.css">
-        <style>
-          body { padding: 20px; }
-          @media print {
-            .no-print { display: none; }
-            a { text-decoration: none; color: black; }
-          }
-        </style>
-      </head>
-      <body>
-        <div class="container">
-          <div class="row mb-4">
-            <div class="col-12 text-center">
-              <h2>Reporte de Evaluación de Riesgo de Diabetes</h2>
-              <hr>
-            </div>
-          </div>
-          ${contenidoImprimir}
-          <div class="row mt-4 no-print">
-            <div class="col-12 text-center">
-              <button onclick="window.print()" class="btn btn-primary">Imprimir</button>
-              <button onclick="window.close()" class="btn btn-secondary ml-2">Cerrar</button>
-            </div>
-          </div>
-        </div>
-      </body>
-      </html>
-    `);
-
-    ventanaImpresion.document.close();
+    const testId = document.getElementById("btn-imprimir").dataset.id;
+    const url = `/admin/diagnosticos/print/${testId}`;
+    window.open(url, "_blank");
   }
 
   /**

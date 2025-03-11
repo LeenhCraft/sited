@@ -20,6 +20,7 @@ use App\Controllers\Chio\PacientesController;
 use App\Controllers\Chio\PersonalController;
 use App\Controllers\Chio\PreguntasController;
 use App\Controllers\Chio\TestController;
+use App\Controllers\Chio\TestWebController;
 use App\Controllers\Login\LoginController;
 use App\Controllers\Login\LogoutController;
 
@@ -184,5 +185,7 @@ $app->group('/admin', function (RouteCollectorProxy $group) {
 
         // Nueva ruta para búsqueda de pacientes (AJAX)
         $group->get('/buscar-pacientes', TestController::class . ':buscarPacientes');
+        // Ruta para ver el PDF de un test
+        $group->get('/print/{id}', ListaTestController::class . ':printTest');
     })->add(PermissionMiddleware::class);
 })->add(new LoginAdminMiddleware());

@@ -90,7 +90,7 @@
                                                 <i class="icon-base bx bx-clipboard text-primary mb-2" style="font-size: 3rem;"></i>
                                                 <h6>No has realizado ningún test aún</h6>
                                                 <p class="mb-3">Realiza tu primer test para ver los resultados aquí</p>
-                                                <a href="/sited/test" class="btn btn-primary">Ver tests disponibles</a>
+                                                <a href="/sited/test" class="btn btn-primary">Realizar mi primer Test</a>
                                             </div>
                                         </td>
                                     </tr>

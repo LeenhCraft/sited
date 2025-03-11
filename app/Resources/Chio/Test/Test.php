@@ -253,7 +253,7 @@ $permissions = $data["permission"];
 
                             <div class="row mt-5">
                                 <div class="col-md-6 text-md-left text-center">
-                                    <button type="button" id="btn-imprimir" class="btn btn-secondary">
+                                    <button type="button" id="btn-imprimir" data-id="" class="btn btn-secondary">
                                         <i class="fas fa-print me-2"></i> Imprimir resultados
                                     </button>
                                 </div>

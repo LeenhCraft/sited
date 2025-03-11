@@ -116,7 +116,7 @@ class TestModel extends TableModel
     public function getTestPreguntas($testId)
     {
         $this->emptyQuery();
-        $sql = "SELECT tp.*, p.titulo, p.contenido, r.contenido as respuesta_contenido, 
+        $sql = "SELECT tp.*, p.titulo as pregunta_texto, p.contenido, r.contenido as respuesta_texto, 
                 r.contenido_alternativo, r.metadatos as respuesta_metadata
                 FROM sd_test_preguntas tp
                 INNER JOIN pr_preguntas p ON tp.id_pregunta = p.id_pregunta

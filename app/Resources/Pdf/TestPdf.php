@@ -578,17 +578,6 @@ $analisis = isset($test['test']['respuesta_analisis']) ? json_decode($test['test
             </table>
         </div>
 
-        <!-- Área de firma -->
-        <div class="signature-area">
-            <div class="signature-box">
-                <div class="signature-line">
-                    Dr. Rocio Isabel Benites Loja<br>
-                    CMP: 12345<br>
-                    Especialista en Endocrinología
-                </div>
-            </div>
-        </div>
-
         <!-- Pie de página -->
         <div class="footer">
             <p>Este documento ha sido generado automáticamente por el Sistema SITED.</p>
