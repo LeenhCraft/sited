@@ -64,7 +64,12 @@
                             <div class="navbar-nav align-items-center w-100">
                                 <div class="nav-item d-flex align-items-center w-100">
                                     <a class="w-100 border-0 app-header__logo text-dark text-start text-break user-select-none">
-                                        <span>Bienvenido</span> <?php echo $arrData['nombre'] ?? "UNDEFINED"; ?>
+                                        <?php
+                                        // solo mostrar 20 caracteres del nombre
+                                        $arr = explode(" ", $arrData['nombre']);
+                                        $nombre = substr($arr[0], 0, 20);
+                                        ?>
+                                        <span>Bienvenido</span> <?php echo $nombre ?? "UNDEFINED"; ?>
                                     </a>
                                 </div>
                             </div>
@@ -74,8 +79,8 @@
                             <!-- User -->
                             <li class="nav-item navbar-dropdown dropdown-user dropdown">
                                 <a class="nav-link dropdown-toggle hide-arrow" href="javascript:void(0);" data-bs-toggle="dropdown">
-                                    <div class="avatar avatar-online">
-                                        <img src="<?= $arrData["foto"] ?>" alt class="w-100 rounded-circle object-fit-cover" />
+                                    <div class="avatar avatar-online border border-2 rounded-circle">
+                                        <img src="<?= $arrData["foto"] ?: "/img/default.png" ?>" alt="<?= $arrData["nombre"] ?>" class="w-100 rounded-circle object-fit-cover" />
                                     </div>
                                 </a>
                                 <ul class="dropdown-menu dropdown-menu-end">
@@ -83,8 +88,8 @@
                                         <a class="dropdown-item" href="#">
                                             <div class="d-flex">
                                                 <div class="flex-shrink-0 me-3">
-                                                    <div class="avatar avatar-online">
-                                                        <img src="<?= $arrData["foto"] ?>" alt class="w-100 rounded-circle object-fit-cover" />
+                                                    <div class="avatar avatar-online border border-2 rounded">
+                                                        <img src="<?= $arrData["foto"] ?: "/img/default.png" ?>" alt="<?= $arrData["nombre"] ?>" class="w-100 rounded-circle object-fit-cover" />
                                                     </div>
                                                 </div>
                                                 <div class="flex-grow-1">
