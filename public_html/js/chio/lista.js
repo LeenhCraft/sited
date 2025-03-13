@@ -776,7 +776,7 @@ const TestList = {
       $table.append(`
                 <tr>
                     <td>${index + 1}</td>
-                    <td>${pregunta.titulo}</td>
+                    <td>${pregunta.pregunta_texto}</td>
                     <td>${pregunta.respuesta_usuario}</td>
                     <td><span class="text-center badge ${nivelClass}">${nivelText}</span></td>
                 </tr>
