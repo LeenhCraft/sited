@@ -15,6 +15,7 @@ use App\Controllers\Admin\RolesController;
 use App\Controllers\Admin\SubMenusController;
 use App\Controllers\Admin\UsuariosController;
 use App\Controllers\Chio\EspecialidadController;
+use App\Controllers\Chio\HorarioController;
 use App\Controllers\Chio\ListaTestController;
 use App\Controllers\Chio\PacientesController;
 use App\Controllers\Chio\PersonalController;
@@ -157,6 +158,18 @@ $app->group('/admin', function (RouteCollectorProxy $group) {
         $group->get('/search/{id}', EspecialidadController::class . ':search');
         $group->post('/update/{id}', EspecialidadController::class . ':update');
         $group->post('/delete/{id}', EspecialidadController::class . ':delete');
+    })->add(PermissionMiddleware::class);
+
+    $group->group('/horario-medico', function (RouteCollectorProxy $group) {
+        $group->get('', HorarioController::class . ':index');
+        $group->post('', HorarioController::class . ':list');
+        $group->post('/save', HorarioController::class . ':store');
+        $group->get('/search/{id}', HorarioController::class . ':search');
+        $group->post('/update/{id}', HorarioController::class . ':update');
+        $group->post('/delete/{id}', HorarioController::class . ':delete');
+        
+        // ruta para buscar a los medicos en base al nombre o dni
+        $group->get('/medicos', HorarioController::class . ':getMedicos');
     })->add(PermissionMiddleware::class);
 
     $group->group('/preguntas', function (RouteCollectorProxy $group) {
