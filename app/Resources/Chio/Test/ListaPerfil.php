@@ -78,6 +78,9 @@
                                                         <a class="dropdown-item print-test" href="javascript:void(0);" data-id="<?= $test['idtest'] ?>">
                                                             <i class="icon-base bx bx-printer me-1"></i> Imprimir
                                                         </a>
+                                                        <a class="dropdown-item agendar-cita" href="javascript:void(0);" data-id="<?= $test['idtest'] ?>">
+                                                            <i class="icon-base bx bx-time me-1"></i> Agendar Cita
+                                                        </a>
                                                     </div>
                                                 </div>
                                             </td>

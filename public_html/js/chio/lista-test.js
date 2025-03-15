@@ -127,7 +127,7 @@ function setupTestListeners() {
   document.querySelectorAll(".print-test").forEach((btn) => {
     btn.addEventListener("click", function () {
       const testId = this.dataset.id;
-      const url = `/admin/lista-test/print/${testId}`;
+      const url = `/sited/test/api/detalle/${testId}`;
       window.open(url, "_blank");
       // fetchTestDetails(testId, "print");
     });
