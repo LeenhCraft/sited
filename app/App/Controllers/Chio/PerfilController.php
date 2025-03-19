@@ -90,13 +90,22 @@ class PerfilController extends Controller
             "url" => $request->getUri()->getPath(),
             "css" => [
                 "/assets/vendor/css/pages/ui-carousel.css",
-                "/assets/vendor/libs/swiper/swiper.css"
+                "/assets/vendor/libs/swiper/swiper.css",
+                "/node_modules/flatpickr/dist/flatpickr.min.css",
+                "/vendor/select2/select2/dist/css/select2.min.css",
+                "/css/select2-custom.css",
             ],
             "js" => [
                 "/assets/vendor/libs/swiper/swiper.js",
                 "/assets/js/ui-carousel.js",
+                "/node_modules/moment/min/moment.min.js",
+                "/node_modules/moment/locale/es.js",
+                "/node_modules/flatpickr/dist/flatpickr.min.js",
+                "/node_modules/flatpickr/dist/l10n/es.js",
+                "/vendor/select2/select2/dist/js/select2.full.min.js",
                 "/js/chio/lista-test.js?v=" . time()
             ],
+            "user" => $userData,
             "tests" => $testData
         ]);
     }

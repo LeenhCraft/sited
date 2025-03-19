@@ -344,9 +344,9 @@ $permissions = $data["permission"];
                                 <thead>
                                     <tr>
                                         <th width="5%">#</th>
-                                        <th width="60%">Pregunta</th>
+                                        <th width="55%">Pregunta</th>
                                         <th width="25%">Respuesta</th>
-                                        <th width="10%">Nivel</th>
+                                        <th width="15%">Nivel</th>
                                     </tr>
                                 </thead>
                                 <tbody id="detail-answers-table">

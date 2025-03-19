@@ -14,6 +14,7 @@ use App\Controllers\Admin\PersonasController;
 use App\Controllers\Admin\RolesController;
 use App\Controllers\Admin\SubMenusController;
 use App\Controllers\Admin\UsuariosController;
+use App\Controllers\Chio\CitasController;
 use App\Controllers\Chio\EspecialidadController;
 use App\Controllers\Chio\HorarioController;
 use App\Controllers\Chio\ListaTestController;
@@ -167,7 +168,7 @@ $app->group('/admin', function (RouteCollectorProxy $group) {
         $group->get('/search/{id}', HorarioController::class . ':search');
         $group->post('/update/{id}', HorarioController::class . ':update');
         $group->post('/delete/{id}', HorarioController::class . ':delete');
-        
+
         // ruta para buscar a los medicos en base al nombre o dni
         $group->get('/medicos', HorarioController::class . ':getMedicos');
     })->add(PermissionMiddleware::class);
@@ -200,5 +201,36 @@ $app->group('/admin', function (RouteCollectorProxy $group) {
         $group->get('/buscar-pacientes', TestController::class . ':buscarPacientes');
         // Ruta para ver el PDF de un test
         $group->get('/print/{id}', ListaTestController::class . ':printTest');
+    })->add(PermissionMiddleware::class);
+
+    $group->group('/citas', function (RouteCollectorProxy $group) {
+        // Ruta principal
+        $group->get('', CitasController::class . ':index');
+
+        // Rutas para la gestión de citas
+        $group->get('/search', CitasController::class . ':search');
+        $group->post('/save', CitasController::class . ':save');
+        $group->post('/update', CitasController::class . ':update');
+        $group->post('/delete', CitasController::class . ':delete');
+        $group->get('/getCita', CitasController::class . ':getCita');
+
+        // Rutas para datos relacionados
+        $group->get('/getEspecialidades', CitasController::class . ':getEspecialidades');
+        $group->get('/getEstados', CitasController::class . ':getEstados');
+        $group->get('/getMedicosPorEspecialidad', CitasController::class . ':getMedicosPorEspecialidad');
+        $group->get('/getHorariosDisponibles', CitasController::class . ':getHorariosDisponibles');
+
+        // Rutas para búsquedas Select2
+        $group->get('/searchPacientes', CitasController::class . ':searchPacientes');
+        $group->get('/searchMedicos', CitasController::class . ':searchMedicos');
+
+        // Ruta para obtener disponibilidad de horarios (calendario)
+        $group->get('/getDisponibilidadHorarios', CitasController::class . ':getDisponibilidadHorarios');
+
+        // Ruta para obtener próximas citas disponibles
+        $group->get('/getProximasCitasDisponibles', CitasController::class . ':getProximasCitasDisponibles');
+
+        // Ruta para exportación PDF
+        $group->get('/exportPdf', CitasController::class . ':exportPdf');
     })->add(PermissionMiddleware::class);
 })->add(new LoginAdminMiddleware());

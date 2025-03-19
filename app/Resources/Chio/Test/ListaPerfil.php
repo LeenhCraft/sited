@@ -1,4 +1,10 @@
 <?php header_web('Template.Header', $data); ?>
+<script>
+    const userID = <?php echo $_SESSION['web_id']; ?>;
+    const pacienteID = <?php echo $data['user']["id_paciente"]; ?>;
+    const userName = '<?php echo $data["user"]["nombre"]; ?>';
+    const userEmail = '<?php echo $data["user"]["email"]; ?>';
+</script>
 <div data-bs-spy="scroll" class="scrollspy-example">
     <section id="profile" class="section-py">
         <div class="container-xxl flex-grow-1 container-p-y">
@@ -107,4 +113,142 @@
     </section>
 </div>
 
+<div
+    class="modal fade"
+    id="modalAgendarCita"
+    data-bs-backdrop="static" data-bs-keyboard="false"
+    tabindex="-1"
+    aria-labelledby="modalAgendarCitaLabel"
+    aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalAgendarCitaLabel">
+                    <i class="fas fa-calendar-plus me-2"></i> Agendar Cita Médica
+                </h5>
+                <button
+                    type="button"
+                    class="btn-close btn-close-white"
+                    data-bs-dismiss="modal"
+                    aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="form-agendar-cita">
+                    <!-- Mensaje de asignación automática -->
+                    <div class="alert alert-info mb-4">
+                        <div class="d-flex">
+                            <div class="me-3">
+                                <i class="bx bx-info-circle bx-md"></i>
+                            </div>
+                            <div>
+                                <h5 class="alert-heading">Asignación de especialista</h5>
+                                <p class="mb-0">
+                                    Basado en tu evaluación de riesgo, hemos preseleccionado la
+                                    especialidad médica más adecuada para tu atención:
+                                    <strong id="especialidad-recomendada">Endocrinología</strong>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Campos ocultos para especialidad y médico -->
+                    <input type="hidden" id="especialidad" value="" />
+                    <input type="hidden" id="medico" value="" />
+
+                    <!-- Fecha -->
+                    <div class="mb-4">
+                        <label for="fecha-cita" class="form-label fw-bold">
+                            <i class="fas fa-calendar-alt me-1"></i> Fecha
+                        </label>
+                        <input
+                            type="text"
+                            class="form-control"
+                            id="fecha-cita"
+                            placeholder="Selecciona una fecha"
+                            readonly
+                            required />
+                        <div class="form-text">
+                            Solo se muestran fechas con disponibilidad
+                        </div>
+                    </div>
+
+                    <!-- Hora -->
+                    <div class="mb-4">
+                        <label for="hora-cita" class="form-label fw-bold">
+                            <i class="fas fa-clock me-1"></i> Hora
+                        </label>
+                        <select
+                            class="form-select"
+                            id="hora-cita"
+                            disabled
+                            required>
+                            <option value="">Primero selecciona una fecha</option>
+                        </select>
+                        <div class="form-text">
+                            Horarios disponibles para la fecha seleccionada
+                        </div>
+                    </div>
+
+                    <!-- Observaciones -->
+                    <div class="mb-3">
+                        <label for="observaciones" class="form-label fw-bold">
+                            <i class="fas fa-comment-medical me-1"></i> Observaciones
+                            (opcional)
+                        </label>
+                        <textarea
+                            class="form-control"
+                            id="observaciones"
+                            rows="3"
+                            placeholder="Indica cualquier información adicional relevante para tu cita (síntomas, medicación actual, alergias, etc.)"></textarea>
+                    </div>
+
+                    <!-- Resumen de la cita -->
+                    <div
+                        class="card bg-light border-0 shadow-sm mt-4 d-none"
+                        id="resumen-cita">
+                        <div class="card-body">
+                            <h5 class="card-title mb-3">
+                                <i class="fas fa-clipboard-check me-2"></i> Resumen de tu cita
+                            </h5>
+                            <ul class="list-group list-group-flush">
+                                <li
+                                    class="list-group-item bg-transparent d-flex justify-content-between">
+                                    <span class="fw-bold">Paciente:</span>
+                                    <span id="resumen-paciente">-</span>
+                                </li>
+                                <li
+                                    class="list-group-item bg-transparent d-flex justify-content-between">
+                                    <span class="fw-bold">Especialidad:</span>
+                                    <span id="resumen-especialidad">-</span>
+                                </li>
+                                <li
+                                    class="list-group-item bg-transparent d-flex justify-content-between">
+                                    <span class="fw-bold">Médico:</span>
+                                    <span id="resumen-medico">-</span>
+                                </li>
+                                <li
+                                    class="list-group-item bg-transparent d-flex justify-content-between">
+                                    <span class="fw-bold">Fecha y hora:</span>
+                                    <span id="resumen-fecha-hora">-</span>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="fas fa-times me-1"></i> Cancelar
+                </button>
+                <button
+                    type="button"
+                    class="btn btn-primary"
+                    id="btn-confirmar-cita"
+                    disabled>
+                    <i class="fas fa-check me-1"></i> Confirmar Cita
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
 <?php footer_web('Template.Footer', $data); ?>

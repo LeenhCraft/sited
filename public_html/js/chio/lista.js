@@ -92,7 +92,7 @@ const TestList = {
           },
         },
       ],
-      order:[]
+      order: [],
     });
   },
 
@@ -778,7 +778,10 @@ const TestList = {
                     <td>${index + 1}</td>
                     <td>${pregunta.pregunta_texto}</td>
                     <td>${pregunta.respuesta_usuario}</td>
-                    <td><span class="text-center badge ${nivelClass}">${nivelText}</span></td>
+                    <td>
+                      <span class="text-cener badeg bg-label-primary px-2">${nivel}</span>
+                      <span class="text-center badge ${nivelClass}">${nivelText}</span>
+                    </td>
                 </tr>
             `);
     });

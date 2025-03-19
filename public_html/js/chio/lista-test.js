@@ -2,6 +2,13 @@
  * Funciones para la gestión de tests de usuario
  */
 
+let datosUsuario = {
+  id: userID || 0,
+  id_paciente: pacienteID || 0,
+  nombre: userName || "Usuario",
+  email: userEmail || "",
+};
+
 document.addEventListener("DOMContentLoaded", function () {
   // Inicializar DataTables si existe la tabla
   if (document.getElementById("testsTable")) {
@@ -131,6 +138,44 @@ function setupTestListeners() {
       window.open(url, "_blank");
       // fetchTestDetails(testId, "print");
     });
+  });
+
+  document.querySelectorAll(".agendar-cita").forEach((btn) => {
+    btn.addEventListener("click", function () {
+      const testId = this.dataset.id;
+      console.log("Agendar citas para el test", testId);
+      abrirModalAgendarCita(testId);
+      datosUsuario.id_test = testId;
+    });
+
+    document
+      .getElementById("btn-confirmar-cita")
+      .addEventListener("click", function () {
+        console.log("Confirmar cita");
+
+        // Recopilar datos de la cita
+        const fecha = document.getElementById("fecha-cita").value;
+        const hora = document.getElementById("hora-cita").value;
+        const observaciones = document.getElementById("observaciones").value;
+        const especialidad =
+          document.getElementById("especialidad").value || "1"; // Valor por defecto si no está establecido
+        const medico = document.getElementById("medico").value;
+
+        // Crear objeto con los datos de la cita
+        const datosCita = {
+          fecha: fecha,
+          hora: hora,
+          observaciones: observaciones,
+          especialidad: especialidad,
+          medico: medico,
+          id_paciente: datosUsuario.id_paciente,
+          id_usuario: datosUsuario.id,
+          id_test: datosUsuario.id_test,
+        };
+
+        // Enviar la solicitud de cita
+        enviarSolicitudCita(datosCita);
+      });
   });
 
   // Exportar todos los tests
@@ -481,4 +526,435 @@ function getScoreColorClass(score) {
   if (score >= 60) return "info";
   if (score >= 40) return "warning";
   return "danger";
+}
+
+// Función que hace la petición al servidor
+async function obtenerDisponibilidadHorarios() {
+  try {
+    const response = await fetch("/sited/disponibilidad", {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error("No se pudo obtener la disponibilidad");
+    }
+
+    const respuesta = await response.json();
+    // Verificar si la respuesta es exitosa y contiene datos
+    if (respuesta && respuesta.success && Array.isArray(respuesta.data)) {
+      // Filtramos por especialidad si se proporciona
+      const medicosEspecialidad = respuesta.data;
+
+      // Si no hay médicos en la especialidad, devolver todos
+      return medicosEspecialidad.length > 0
+        ? medicosEspecialidad
+        : respuesta.data;
+    } else {
+      throw new Error("Formato de respuesta inválido");
+    }
+  } catch (error) {
+    console.error("Error al obtener disponibilidad:", error);
+    throw error;
+  }
+}
+
+// Función para extraer las fechas disponibles de todos los médicos
+function obtenerFechasDisponibles(medicos) {
+  // Verificar si tenemos médicos válidos
+  if (!Array.isArray(medicos) || medicos.length === 0) {
+    return [];
+  }
+
+  // Usar un Set para evitar duplicados
+  let fechasDisponibles = new Set();
+
+  // Recorrer cada médico
+  medicos.forEach((medico) => {
+    // Verificar si el médico tiene horarios
+    if (medico && medico.horarios) {
+      // Obtener todas las fechas (claves) del objeto horarios
+      const fechasMedico = Object.keys(medico.horarios);
+
+      // Para cada fecha, verificar si tiene horarios disponibles
+      fechasMedico.forEach((fecha) => {
+        const horariosEnFecha = medico.horarios[fecha];
+
+        // Verificar si hay horarios disponibles en esta fecha
+        if (Array.isArray(horariosEnFecha) && horariosEnFecha.length > 0) {
+          // Si es un array con elementos, añadir la fecha
+          fechasDisponibles.add(fecha);
+        } else if (
+          typeof horariosEnFecha === "object" &&
+          Object.keys(horariosEnFecha).length > 0
+        ) {
+          // Si es un objeto con propiedades, añadir la fecha
+          fechasDisponibles.add(fecha);
+        }
+      });
+    }
+  });
+
+  // Convertir el Set a un array y ordenar las fechas
+  return Array.from(fechasDisponibles).sort(
+    (a, b) => new Date(a) - new Date(b)
+  );
+}
+
+// Función para actualizar las horas disponibles según la fecha seleccionada
+function actualizarHorasDisponibles(fecha, medicos) {
+  // Verificar si tenemos datos válidos
+  if (!fecha || !Array.isArray(medicos) || medicos.length === 0) {
+    // Si no hay datos válidos, deshabilitar el selector de horas
+    $("#hora-cita")
+      .empty()
+      .prop("disabled", true)
+      .append('<option value="">No hay horarios disponibles</option>');
+    $("#btn-confirmar-cita").prop("disabled", true);
+    return;
+  }
+
+  // Encontrar qué médicos tienen disponibilidad en esta fecha
+  const medicosDisponiblesEnFecha = medicos.filter(
+    (medico) => medico.horarios && medico.horarios[fecha]
+  );
+
+  if (medicosDisponiblesEnFecha.length === 0) {
+    // Si no hay médicos disponibles para esta fecha
+    $("#hora-cita")
+      .empty()
+      .prop("disabled", true)
+      .append(
+        '<option value="">No hay disponibilidad para esta fecha</option>'
+      );
+    $("#btn-confirmar-cita").prop("disabled", true);
+    return;
+  }
+
+  // Recopilar todas las horas disponibles para todos los médicos en esta fecha
+  let todasHoras = [];
+
+  medicosDisponiblesEnFecha.forEach((medico) => {
+    // Verificar el formato de los horarios (pueden ser array u objeto)
+    const horariosEnFecha = medico.horarios[fecha];
+
+    if (Array.isArray(horariosEnFecha)) {
+      // Si es un array, añadimos todas las horas
+      todasHoras = [...todasHoras, ...horariosEnFecha];
+    } else if (typeof horariosEnFecha === "object") {
+      // Si es un objeto, añadimos todos los valores
+      todasHoras = [...todasHoras, ...Object.values(horariosEnFecha)];
+    }
+  });
+
+  // Eliminar duplicados y ordenar
+  todasHoras = [...new Set(todasHoras)].sort();
+
+  // Actualizar select de horas
+  $("#hora-cita").empty().prop("disabled", false);
+
+  if (todasHoras.length === 0) {
+    $("#hora-cita").append(
+      '<option value="">No hay horas disponibles</option>'
+    );
+    $("#hora-cita").prop("disabled", true);
+    $("#btn-confirmar-cita").prop("disabled", true);
+    return;
+  }
+
+  $("#hora-cita").append('<option value="">Selecciona una hora</option>');
+
+  // Agregar las horas disponibles
+  todasHoras.forEach((hora) => {
+    // Formatear la hora para mostrar (de 24h a 12h)
+    const horaFormateada = formatearHora(hora);
+
+    // Encontrar qué médicos están disponibles en esta hora específica
+    const medicosEnHora = medicosDisponiblesEnFecha.filter((medico) => {
+      const horariosEnFecha = medico.horarios[fecha];
+
+      if (Array.isArray(horariosEnFecha)) {
+        return horariosEnFecha.includes(hora);
+      } else if (typeof horariosEnFecha === "object") {
+        return Object.values(horariosEnFecha).includes(hora);
+      }
+      return false;
+    });
+
+    // Guardar los IDs de médicos disponibles como atributo de datos
+    const medicosIds = medicosEnHora.map((m) => m.id).join(",");
+    const medicosNombres = medicosEnHora.map((m) => m.nombre).join("|");
+
+    $("#hora-cita").append(
+      `<option value="${hora}" data-medicos="${medicosIds}" data-nombres="${medicosNombres}">${horaFormateada}</option>`
+    );
+  });
+
+  // Guardar la fecha seleccionada como atributo de datos para usar cuando se seleccione una hora
+  $("#hora-cita").data("fecha-seleccionada", fecha);
+
+  // inicializar select2
+  $("#hora-cita").select2({
+    placeholder: "Selecciona una hora",
+    width: "100%",
+    dropdownParent: $("#modalAgendarCita"),
+  });
+
+  // Asegurarnos de que el evento change se active correctamente
+  $("#hora-cita")
+    .off("change.horacita")
+    .on("change.horacita", function () {
+      const horaSeleccionada = $(this).val();
+
+      if (horaSeleccionada) {
+        const opcionSeleccionada = $(this).find("option:selected");
+        const medicosIds = opcionSeleccionada.data("medicos");
+
+        // Actualizar el campo oculto con el ID del médico
+        if (medicosIds) {
+          // Si hay múltiples médicos, seleccionamos el primero
+          const idMedico = medicosIds.split(",")[0];
+          $("#medico").val(idMedico);
+          console.log("ID de médico seleccionado:", idMedico);
+        } else {
+          $("#medico").val("");
+        }
+
+        // Habilitar botón confirmar cita
+        $("#btn-confirmar-cita").prop("disabled", false);
+
+        // Mostrar el resumen de la cita
+        actualizarResumenCita();
+      } else {
+        $("#btn-confirmar-cita").prop("disabled", true);
+        $("#resumen-cita").addClass("d-none");
+      }
+    });
+
+  // Disparar evento change para que select2 actualice
+  $("#hora-cita").trigger("change");
+}
+
+function formatearFecha(fechaStr) {
+  return moment(fechaStr).format("dddd, D [de] MMMM [de] YYYY");
+}
+
+// Función auxiliar para formatear hora de 24h a 12h
+function formatearHora(hora24) {
+  const [hora, minutos] = hora24.split(":");
+  let periodo = "AM";
+  let hora12 = parseInt(hora, 10);
+
+  if (hora12 >= 12) {
+    periodo = "PM";
+    if (hora12 > 12) {
+      hora12 -= 12;
+    }
+  }
+
+  if (hora12 === 0) {
+    hora12 = 12;
+  }
+
+  return `${hora12}:${minutos} ${periodo}`;
+}
+
+// Función para actualizar el resumen de la cita
+function actualizarResumenCita() {
+  const fechaSeleccionada = document.getElementById("fecha-cita").value;
+  const horaSelect = document.getElementById("hora-cita");
+  const horaSeleccionada = horaSelect.options[horaSelect.selectedIndex].text;
+
+  // Obtener datos del médico seleccionado
+  const medicosIds =
+    horaSelect.options[horaSelect.selectedIndex].dataset.medicos;
+  const medicosNombres =
+    horaSelect.options[horaSelect.selectedIndex].dataset.nombres;
+
+  // Si hay múltiples médicos, tomamos el primero
+  const idMedico = medicosIds.split(",")[0];
+  const nombreMedico = medicosNombres.split("|")[0];
+
+  // Actualizar resumen
+  document.getElementById("resumen-paciente").textContent = datosUsuario.nombre;
+  document.getElementById("resumen-especialidad").textContent =
+    document.getElementById("especialidad-recomendada").textContent;
+  document.getElementById("resumen-medico").textContent =
+    nombreMedico || "Asignación automática";
+  document.getElementById("resumen-fecha-hora").textContent = `${formatearFecha(
+    fechaSeleccionada
+  )} - ${horaSeleccionada}`;
+
+  // Establecer el médico seleccionado
+  document.getElementById("medico").value = idMedico;
+
+  // Mostrar el resumen
+  document.getElementById("resumen-cita").classList.remove("d-none");
+}
+
+// Función para abrir el modal de agendar cita
+async function abrirModalAgendarCita(testId) {
+  try {
+    // Mostrar indicador de carga
+    Swal.fire({
+      title: "Cargando horarios disponibles",
+      html: `
+          <div class="d-flex justify-content-center">
+            <div class="spinner-border text-primary" role="status">
+              <span class="visually-hidden">Cargando...</span>
+            </div>
+          </div>
+          <p class="mt-2">Estamos consultando la disponibilidad de citas...</p>
+        `,
+      showConfirmButton: false,
+      allowOutsideClick: false,
+      allowEscapeKey: false,
+      didOpen: () => {
+        Swal.showLoading();
+      },
+    });
+
+    // AQUÍ ESTÁ LA PETICIÓN PARA OBTENER HORARIOS DISPONIBLES
+    const horarios = await obtenerDisponibilidadHorarios();
+
+    // Cerrar el Sweet Alert de carga
+    Swal.close();
+
+    // Crear y añadir el modal al DOM (código omitido para brevedad)...
+
+    // AQUÍ ES DONDE SE CONFIGURA FLATPICKR CON LOS HORARIOS OBTENIDOS
+    // Obtener todas las fechas disponibles de los horarios
+    const fechasDisponiblesList = obtenerFechasDisponibles(horarios);
+
+    // Inicializar flatpickr con las fechas disponibles
+    const flatpickrInstance = flatpickr("#fecha-cita", {
+      enableTime: false,
+      dateFormat: "Y-m-d",
+      minDate: "today",
+      locale: {
+        firstDayOfWeek: 1,
+        weekdays: {
+          shorthand: ["Do", "Lu", "Ma", "Mi", "Ju", "Vi", "Sá"],
+          longhand: [
+            "Domingo",
+            "Lunes",
+            "Martes",
+            "Miércoles",
+            "Jueves",
+            "Viernes",
+            "Sábado",
+          ],
+        },
+        months: {
+          shorthand: [
+            "Ene",
+            "Feb",
+            "Mar",
+            "Abr",
+            "May",
+            "Jun",
+            "Jul",
+            "Ago",
+            "Sep",
+            "Oct",
+            "Nov",
+            "Dic",
+          ],
+          longhand: [
+            "Enero",
+            "Febrero",
+            "Marzo",
+            "Abril",
+            "Mayo",
+            "Junio",
+            "Julio",
+            "Agosto",
+            "Septiembre",
+            "Octubre",
+            "Noviembre",
+            "Diciembre",
+          ],
+        },
+      },
+      enable: fechasDisponiblesList, // Solo habilita las fechas que tienen disponibilidad
+      onChange: function (selectedDates, dateStr) {
+        actualizarHorasDisponibles(dateStr, horarios);
+      },
+    });
+
+    // AQUÍ SE MUESTRA EL MODAL YA CONFIGURADO
+    $("#modalAgendarCita").modal("show");
+  } catch (error) {
+    console.error("Error al abrir el modal:", error);
+    Swal.fire({
+      title: "Error",
+      text: "No se pudieron cargar los horarios disponibles. Por favor, intenta nuevamente más tarde.",
+      icon: "error",
+      confirmButtonText: "Entendido",
+    });
+  }
+}
+
+// Función para enviar la solicitud de cita al servidor
+function enviarSolicitudCita(datosCita) {
+  // Mostrar un indicador de carga
+  Swal.fire({
+    title: "Procesando solicitud",
+    html: "Estamos agendando tu cita...",
+    allowOutsideClick: false,
+    didOpen: () => {
+      Swal.showLoading();
+    },
+  });
+
+  // Enviar los datos al servidor
+  fetch("/sited/agendar-cita", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(datosCita),
+  })
+    .then((response) => response.json())
+    .then((data) => {
+      if (data.success) {
+        Swal.fire({
+          title: "¡Cita Agendada!",
+          html: `
+        <div class="alert alert-success">
+          <p>Tu cita ha sido agendada exitosamente.</p>
+          <p><strong>Fecha:</strong> ${formatearFecha(datosCita.fecha)}</p>
+          <p><strong>Hora:</strong> ${datosCita.hora}</p>
+        </div>
+        <p class="d-none">Recibirás un correo electrónico con los detalles de tu cita.</p>
+      `,
+          icon: "success",
+        }).then((confirm) => {
+          if (confirm.isConfirmed) {
+            // Redirigir a la página de inicio
+            window.location.href = "/perfil/mis-tests";
+          }
+        });
+
+        $("#modalAgendarCita").modal("hide");
+      } else {
+        Swal.fire({
+          title: "Error",
+          text:
+            data.message ||
+            "No pudimos agendar tu cita. Por favor, intenta nuevamente.",
+          icon: "error",
+        });
+      }
+    })
+    .catch((error) => {
+      console.error("Error al agendar cita:", error);
+      Swal.fire({
+        title: "Error",
+        text: "Hubo un problema al comunicarse con el servidor.",
+        icon: "error",
+      });
+    });
 }

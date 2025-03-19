@@ -58,12 +58,47 @@ document.addEventListener("DOMContentLoaded", function () {
     .getElementById("btn-imprimir")
     .addEventListener("click", imprimirResultados);
 
+  document
+    .getElementById("btn-agendar-cita")
+    .addEventListener("click", abrirModalAgendarCita);
+
   // Calcular IMC cuando cambian los valores
   document.getElementById("peso").addEventListener("input", calcularIMC);
   document.getElementById("altura").addEventListener("input", calcularIMC);
   document.getElementById("edad").addEventListener("input", function () {
     datosUsuario.edad = parseInt(this.value) || 0;
   });
+
+  // Event listener para el botón de confirmación de cita
+  document
+    .getElementById("btn-confirmar-cita")
+    .addEventListener("click", function () {
+      console.log("Confirmar cita");
+
+      // Recopilar datos de la cita
+      const fecha = document.getElementById("fecha-cita").value;
+      const hora = document.getElementById("hora-cita").value;
+      const observaciones = document.getElementById("observaciones").value;
+      const especialidad = document.getElementById("especialidad").value || "1"; // Valor por defecto si no está establecido
+      const medico = document.getElementById("medico").value;
+      const id_test = document.querySelector("#btn-agendar-cita").dataset.id;
+
+      // Crear objeto con los datos de la cita
+      const datosCita = {
+        fecha: fecha,
+        hora: hora,
+        observaciones: observaciones,
+        especialidad: especialidad,
+        medico: medico,
+        id_paciente: datosUsuario.id_paciente,
+        id_usuario: datosUsuario.id,
+        id_test: id_test,
+        // nivel_riesgo: obtenerNivelRiesgoActual(),
+      };
+
+      // Enviar la solicitud de cita
+      enviarSolicitudCita(datosCita);
+    });
 
   // Calcular IMC inicial si hay datos
   calcularIMC();
@@ -87,7 +122,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
         // Guardar los valores
         datosUsuario.peso = peso;
-        datosUsuario.altura = alturaEnMetros;
+        datosUsuario.altura = altura;
         datosUsuario.imc = imc;
 
         // Actualizar interfaz
@@ -428,8 +463,6 @@ document.addEventListener("DOMContentLoaded", function () {
       },
     });
 
-    console.log("Datos a enviar:", datosCompletos);
-
     // Enviar al servidor
     fetch("/sited/test/guardar-respuestas", {
       method: "POST",
@@ -448,6 +481,19 @@ document.addEventListener("DOMContentLoaded", function () {
 
           // Calcular resultado
           mostrarResultados(data.resultado);
+
+          // Agregar el idtest al boton de imprimir
+          document.querySelector("#btn-imprimir").dataset.id =
+            data.resultado.id_test;
+
+          // asignar el id del test al boton de agendar cita
+          document.querySelector("#btn-agendar-cita").dataset.id =
+            data.resultado.id_test;
+
+          // Asegurar que la página se desplaza hacia arriba
+          setTimeout(() => {
+            window.scrollTo({ top: 0, behavior: "smooth" });
+          }, 300);
         } else {
           Swal.fire({
             title: "Error",
@@ -635,9 +681,9 @@ document.addEventListener("DOMContentLoaded", function () {
               </div>
               <div class="card-body">
                 <div class="text-center mb-4">
-                  <div class="display-4 fw-bold text-${color}">${Math.round(
-      porcentajeRiesgo
-    )}%</div>
+                  <div class="display-4 fw-bold text-${color}">
+                  ${Math.round(porcentajeRiesgo)}%
+                  </div>
                   <div class="progress mt-2" style="height: 25px;">
                     <div class="progress-bar bg-${color}" role="progressbar" style="width: ${porcentajeRiesgo}%;" 
                       aria-valuenow="${porcentajeRiesgo}" aria-valuemin="0" aria-valuemax="100">
@@ -748,66 +794,9 @@ document.addEventListener("DOMContentLoaded", function () {
    * Función para imprimir los resultados
    */
   function imprimirResultados() {
-    console.log("Imprimir resultados");
-    
-    // Preparar contenido para imprimir
-    const contenidoImprimir = document.getElementById(
-      "resultado-contenido"
-    ).innerHTML;
-
-    // Crear ventana de impresión
-    const ventanaImpresion = window.open("", "_blank");
-    ventanaImpresion.document.write(`
-          <!DOCTYPE html>
-          <html>
-          <head>
-            <title>Resultados Test de Diabetes</title>
-            <link rel="stylesheet" href="/css/bootstrap.min.css">
-            <link rel="stylesheet" href="/assets/vendor/fonts/fontawesome.css">
-            <style>
-              body { 
-                padding: 20px; 
-                font-family: 'Public Sans', sans-serif;
-              }
-              .card {
-                border-radius: 10px;
-                box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-                margin-bottom: 20px;
-              }
-              .card-header {
-                border-radius: 10px 10px 0 0 !important;
-                padding: 15px 20px;
-              }
-              @media print {
-                .no-print { display: none; }
-                a { text-decoration: none; color: black; }
-                .card { box-shadow: none; border: 1px solid #ddd; }
-                .shadow-sm { box-shadow: none !important; }
-              }
-            </style>
-          </head>
-          <body>
-            <div class="container">
-              <div class="row mb-4">
-                <div class="col-12 text-center">
-                  <h2>Reporte de Evaluación de Riesgo de Diabetes</h2>
-                  <p class="text-muted">Fecha: ${new Date().toLocaleDateString()}</p>
-                  <hr>
-                </div>
-              </div>
-              ${contenidoImprimir}
-              <div class="row mt-4 no-print">
-                <div class="col-12 text-center">
-                  <button onclick="window.print()" class="btn btn-primary">Imprimir</button>
-                  <button onclick="window.close()" class="btn btn-secondary ms-2">Cerrar</button>
-                </div>
-              </div>
-            </div>
-          </body>
-          </html>
-        `);
-
-    ventanaImpresion.document.close();
+    const id = document.querySelector("#btn-imprimir").dataset.id;
+    const url = `/admin/lista-test/print/${id}`;
+    window.open(url, "_blank");
   }
 
   /**
@@ -831,5 +820,454 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // Volver a calcular el IMC por si los datos han cambiado
     calcularIMC();
+  }
+
+  // Función que hace la petición al servidor
+  async function obtenerDisponibilidadHorarios() {
+    try {
+      const response = await fetch("/sited/disponibilidad", {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error("No se pudo obtener la disponibilidad");
+      }
+
+      const respuesta = await response.json();
+      // Verificar si la respuesta es exitosa y contiene datos
+      if (respuesta && respuesta.success && Array.isArray(respuesta.data)) {
+        // Filtramos por especialidad si se proporciona
+        const medicosEspecialidad = respuesta.data;
+
+        // Si no hay médicos en la especialidad, devolver todos
+        return medicosEspecialidad.length > 0
+          ? medicosEspecialidad
+          : respuesta.data;
+      } else {
+        throw new Error("Formato de respuesta inválido");
+      }
+    } catch (error) {
+      console.error("Error al obtener disponibilidad:", error);
+      throw error;
+    }
+  }
+
+  // Función para extraer las fechas disponibles de todos los médicos
+  function obtenerFechasDisponibles(medicos) {
+    // Verificar si tenemos médicos válidos
+    if (!Array.isArray(medicos) || medicos.length === 0) {
+      return [];
+    }
+
+    // Usar un Set para evitar duplicados
+    let fechasDisponibles = new Set();
+
+    // Recorrer cada médico
+    medicos.forEach((medico) => {
+      // Verificar si el médico tiene horarios
+      if (medico && medico.horarios) {
+        // Obtener todas las fechas (claves) del objeto horarios
+        const fechasMedico = Object.keys(medico.horarios);
+
+        // Para cada fecha, verificar si tiene horarios disponibles
+        fechasMedico.forEach((fecha) => {
+          const horariosEnFecha = medico.horarios[fecha];
+
+          // Verificar si hay horarios disponibles en esta fecha
+          if (Array.isArray(horariosEnFecha) && horariosEnFecha.length > 0) {
+            // Si es un array con elementos, añadir la fecha
+            fechasDisponibles.add(fecha);
+          } else if (
+            typeof horariosEnFecha === "object" &&
+            Object.keys(horariosEnFecha).length > 0
+          ) {
+            // Si es un objeto con propiedades, añadir la fecha
+            fechasDisponibles.add(fecha);
+          }
+        });
+      }
+    });
+
+    // Convertir el Set a un array y ordenar las fechas
+    return Array.from(fechasDisponibles).sort(
+      (a, b) => new Date(a) - new Date(b)
+    );
+  }
+
+  // Función para actualizar las horas disponibles según la fecha seleccionada
+  function actualizarHorasDisponibles(fecha, medicos) {
+    // Verificar si tenemos datos válidos
+    if (!fecha || !Array.isArray(medicos) || medicos.length === 0) {
+      // Si no hay datos válidos, deshabilitar el selector de horas
+      $("#hora-cita")
+        .empty()
+        .prop("disabled", true)
+        .append('<option value="">No hay horarios disponibles</option>');
+      $("#btn-confirmar-cita").prop("disabled", true);
+      return;
+    }
+
+    // Encontrar qué médicos tienen disponibilidad en esta fecha
+    const medicosDisponiblesEnFecha = medicos.filter(
+      (medico) => medico.horarios && medico.horarios[fecha]
+    );
+
+    if (medicosDisponiblesEnFecha.length === 0) {
+      // Si no hay médicos disponibles para esta fecha
+      $("#hora-cita")
+        .empty()
+        .prop("disabled", true)
+        .append(
+          '<option value="">No hay disponibilidad para esta fecha</option>'
+        );
+      $("#btn-confirmar-cita").prop("disabled", true);
+      return;
+    }
+
+    // Recopilar todas las horas disponibles para todos los médicos en esta fecha
+    let todasHoras = [];
+
+    medicosDisponiblesEnFecha.forEach((medico) => {
+      // Verificar el formato de los horarios (pueden ser array u objeto)
+      const horariosEnFecha = medico.horarios[fecha];
+
+      if (Array.isArray(horariosEnFecha)) {
+        // Si es un array, añadimos todas las horas
+        todasHoras = [...todasHoras, ...horariosEnFecha];
+      } else if (typeof horariosEnFecha === "object") {
+        // Si es un objeto, añadimos todos los valores
+        todasHoras = [...todasHoras, ...Object.values(horariosEnFecha)];
+      }
+    });
+
+    // Eliminar duplicados y ordenar
+    todasHoras = [...new Set(todasHoras)].sort();
+
+    // Actualizar select de horas
+    $("#hora-cita").empty().prop("disabled", false);
+
+    if (todasHoras.length === 0) {
+      $("#hora-cita").append(
+        '<option value="">No hay horas disponibles</option>'
+      );
+      $("#hora-cita").prop("disabled", true);
+      $("#btn-confirmar-cita").prop("disabled", true);
+      return;
+    }
+
+    $("#hora-cita").append('<option value="">Selecciona una hora</option>');
+
+    // Agregar las horas disponibles
+    todasHoras.forEach((hora) => {
+      // Formatear la hora para mostrar (de 24h a 12h)
+      const horaFormateada = formatearHora(hora);
+
+      // Encontrar qué médicos están disponibles en esta hora específica
+      const medicosEnHora = medicosDisponiblesEnFecha.filter((medico) => {
+        const horariosEnFecha = medico.horarios[fecha];
+
+        if (Array.isArray(horariosEnFecha)) {
+          return horariosEnFecha.includes(hora);
+        } else if (typeof horariosEnFecha === "object") {
+          return Object.values(horariosEnFecha).includes(hora);
+        }
+        return false;
+      });
+
+      // Guardar los IDs de médicos disponibles como atributo de datos
+      const medicosIds = medicosEnHora.map((m) => m.id).join(",");
+      const medicosNombres = medicosEnHora.map((m) => m.nombre).join("|");
+
+      $("#hora-cita").append(
+        `<option value="${hora}" data-medicos="${medicosIds}" data-nombres="${medicosNombres}">${horaFormateada}</option>`
+      );
+    });
+
+    // Guardar la fecha seleccionada como atributo de datos para usar cuando se seleccione una hora
+    $("#hora-cita").data("fecha-seleccionada", fecha);
+
+    // inicializar select2
+    $("#hora-cita").select2({
+      placeholder: "Selecciona una hora",
+      width: "100%",
+      dropdownParent: $("#modalAgendarCita"),
+    });
+
+    // Asegurarnos de que el evento change se active correctamente
+    $("#hora-cita")
+      .off("change.horacita")
+      .on("change.horacita", function () {
+        const horaSeleccionada = $(this).val();
+
+        if (horaSeleccionada) {
+          const opcionSeleccionada = $(this).find("option:selected");
+          const medicosIds = opcionSeleccionada.data("medicos");
+
+          // Actualizar el campo oculto con el ID del médico
+          if (medicosIds) {
+            // Si hay múltiples médicos, seleccionamos el primero
+            const idMedico = medicosIds.split(",")[0];
+            $("#medico").val(idMedico);
+            console.log("ID de médico seleccionado:", idMedico);
+          } else {
+            $("#medico").val("");
+          }
+
+          // Habilitar botón confirmar cita
+          $("#btn-confirmar-cita").prop("disabled", false);
+
+          // Mostrar el resumen de la cita
+          actualizarResumenCita();
+        } else {
+          $("#btn-confirmar-cita").prop("disabled", true);
+          $("#resumen-cita").addClass("d-none");
+        }
+      });
+
+    // Disparar evento change para que select2 actualice
+    $("#hora-cita").trigger("change");
+  }
+
+  // Función auxiliar para formatear hora de 24h a 12h
+  function formatearHora(hora24) {
+    const [hora, minutos] = hora24.split(":");
+    let periodo = "AM";
+    let hora12 = parseInt(hora, 10);
+
+    if (hora12 >= 12) {
+      periodo = "PM";
+      if (hora12 > 12) {
+        hora12 -= 12;
+      }
+    }
+
+    if (hora12 === 0) {
+      hora12 = 12;
+    }
+
+    return `${hora12}:${minutos} ${periodo}`;
+  }
+
+  // Función para abrir el modal de agendar cita
+  async function abrirModalAgendarCita() {
+    try {
+      // Mostrar indicador de carga
+      Swal.fire({
+        title: "Cargando horarios disponibles",
+        html: `
+          <div class="d-flex justify-content-center">
+            <div class="spinner-border text-primary" role="status">
+              <span class="visually-hidden">Cargando...</span>
+            </div>
+          </div>
+          <p class="mt-2">Estamos consultando la disponibilidad de citas...</p>
+        `,
+        showConfirmButton: false,
+        allowOutsideClick: false,
+        allowEscapeKey: false,
+        didOpen: () => {
+          Swal.showLoading();
+        },
+      });
+
+      // AQUÍ ESTÁ LA PETICIÓN PARA OBTENER HORARIOS DISPONIBLES
+      const horarios = await obtenerDisponibilidadHorarios();
+
+      // Cerrar el Sweet Alert de carga
+      Swal.close();
+
+      // Crear y añadir el modal al DOM (código omitido para brevedad)...
+
+      // AQUÍ ES DONDE SE CONFIGURA FLATPICKR CON LOS HORARIOS OBTENIDOS
+      // Obtener todas las fechas disponibles de los horarios
+      const fechasDisponiblesList = obtenerFechasDisponibles(horarios);
+
+      // Inicializar flatpickr con las fechas disponibles
+      const flatpickrInstance = flatpickr("#fecha-cita", {
+        enableTime: false,
+        dateFormat: "Y-m-d",
+        minDate: "today",
+        locale: {
+          firstDayOfWeek: 1,
+          weekdays: {
+            shorthand: ["Do", "Lu", "Ma", "Mi", "Ju", "Vi", "Sá"],
+            longhand: [
+              "Domingo",
+              "Lunes",
+              "Martes",
+              "Miércoles",
+              "Jueves",
+              "Viernes",
+              "Sábado",
+            ],
+          },
+          months: {
+            shorthand: [
+              "Ene",
+              "Feb",
+              "Mar",
+              "Abr",
+              "May",
+              "Jun",
+              "Jul",
+              "Ago",
+              "Sep",
+              "Oct",
+              "Nov",
+              "Dic",
+            ],
+            longhand: [
+              "Enero",
+              "Febrero",
+              "Marzo",
+              "Abril",
+              "Mayo",
+              "Junio",
+              "Julio",
+              "Agosto",
+              "Septiembre",
+              "Octubre",
+              "Noviembre",
+              "Diciembre",
+            ],
+          },
+        },
+        enable: fechasDisponiblesList, // Solo habilita las fechas que tienen disponibilidad
+        onChange: function (selectedDates, dateStr) {
+          actualizarHorasDisponibles(dateStr, horarios);
+        },
+      });
+
+      // AQUÍ SE MUESTRA EL MODAL YA CONFIGURADO
+      $("#modalAgendarCita").modal("show");
+    } catch (error) {
+      console.error("Error al abrir el modal:", error);
+      Swal.fire({
+        title: "Error",
+        text: "No se pudieron cargar los horarios disponibles. Por favor, intenta nuevamente más tarde.",
+        icon: "error",
+        confirmButtonText: "Entendido",
+      });
+    }
+  }
+
+  // Función para obtener la fecha mínima (día siguiente)
+  function obtenerFechaMinima() {
+    const hoy = new Date();
+    const manana = new Date(hoy);
+    manana.setDate(manana.getDate() + 1);
+    return manana.toISOString().split("T")[0];
+  }
+
+  // Función para enviar la solicitud de cita al servidor
+  function enviarSolicitudCita(datosCita) {
+    // Mostrar un indicador de carga
+    Swal.fire({
+      title: "Procesando solicitud",
+      html: "Estamos agendando tu cita...",
+      allowOutsideClick: false,
+      didOpen: () => {
+        Swal.showLoading();
+      },
+    });
+
+    // Enviar los datos al servidor
+    fetch("/sited/agendar-cita", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(datosCita),
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        if (data.success) {
+          Swal.fire({
+            title: "¡Cita Agendada!",
+            html: `
+          <div class="alert alert-success">
+            <p>Tu cita ha sido agendada exitosamente.</p>
+            <p><strong>Fecha:</strong> ${formatearFecha(datosCita.fecha)}</p>
+            <p><strong>Hora:</strong> ${datosCita.hora}</p>
+          </div>
+          <p class="d-none">Recibirás un correo electrónico con los detalles de tu cita.</p>
+        `,
+            icon: "success",
+          }).then((confirm) => {
+            if (confirm.isConfirmed) {
+              // Redirigir a la página de inicio
+              window.location.href = "/perfil/mis-tests";
+            }
+          });
+
+          $("#modalAgendarCita").modal("hide");
+        } else {
+          Swal.fire({
+            title: "Error",
+            text:
+              data.message ||
+              "No pudimos agendar tu cita. Por favor, intenta nuevamente.",
+            icon: "error",
+          });
+        }
+      })
+      .catch((error) => {
+        console.error("Error al agendar cita:", error);
+        Swal.fire({
+          title: "Error",
+          text: "Hubo un problema al comunicarse con el servidor.",
+          icon: "error",
+        });
+      });
+  }
+
+  // Función para formatear la fecha
+  function formatearFecha(fechaStr) {
+    const fecha = new Date(fechaStr);
+    return fecha.toLocaleDateString("es-ES", {
+      weekday: "long",
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    });
+  }
+
+  // Función para actualizar el resumen de la cita
+  function actualizarResumenCita() {
+    const fechaSeleccionada = document.getElementById("fecha-cita").value;
+    const horaSelect = document.getElementById("hora-cita");
+    const horaSeleccionada = horaSelect.options[horaSelect.selectedIndex].text;
+
+    // Obtener datos del médico seleccionado
+    const medicosIds =
+      horaSelect.options[horaSelect.selectedIndex].dataset.medicos;
+    const medicosNombres =
+      horaSelect.options[horaSelect.selectedIndex].dataset.nombres;
+
+    // Si hay múltiples médicos, tomamos el primero
+    const idMedico = medicosIds.split(",")[0];
+    const nombreMedico = medicosNombres.split("|")[0];
+
+    // Actualizar resumen
+    document.getElementById("resumen-paciente").textContent =
+      datosUsuario.nombre;
+    document.getElementById("resumen-especialidad").textContent =
+      document.getElementById("especialidad-recomendada").textContent;
+    document.getElementById("resumen-medico").textContent =
+      nombreMedico || "Asignación automática";
+    document.getElementById(
+      "resumen-fecha-hora"
+    ).textContent = `${formatearFecha(
+      fechaSeleccionada
+    )} - ${horaSeleccionada}`;
+
+    // Establecer el médico seleccionado
+    document.getElementById("medico").value = idMedico;
+
+    // Mostrar el resumen
+    document.getElementById("resumen-cita").classList.remove("d-none");
   }
 });

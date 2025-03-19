@@ -3,6 +3,7 @@
 // use Slim\App;
 
 use App\Controllers\Admin\BuscarDocController;
+use App\Controllers\Chio\CitasController;
 use App\Controllers\Chio\PerfilController;
 use App\Controllers\Chio\TestWebController;
 use Slim\Routing\RouteCollectorProxy;
@@ -56,4 +57,6 @@ $app->group('/sited', function (RouteCollectorProxy $sited) {
         $test->get('/api/detalle/{id}', TestWebController::class . ':exportPdf');
     });
     $sited->post('/obtener-preguntas', TestWebController::class . ':obtenerPreguntas');
+    $sited->get('/disponibilidad', CitasController::class . ':getDisponibilidadHorarios');
+    $sited->post('/agendar-cita', TestWebController::class . ':agendarCita');
 })->add(LoginWebMiddleware::class);

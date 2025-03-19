@@ -3,19 +3,23 @@
 namespace App\Controllers\Chio;
 
 use App\Core\Controller;
+use App\Models\CitasModel;
 use App\Models\PacientesModel;
 use App\Models\PreguntasModel;
 use App\Models\RespuestasModel;
 use App\Models\TableModel;
 use App\Models\TestModel;
+use Exception;
 use Mpdf\Mpdf;
 
 class TestWebController extends Controller
 {
+    private $citasModel;
 
     public function __construct()
     {
         parent::__construct();
+        $this->citasModel = new CitasModel();
     }
 
     public function index($request, $response)
@@ -40,19 +44,37 @@ class TestWebController extends Controller
             ->where("u.idusuario", $_SESSION["web_id"])
             ->first();
 
+        $model->emptyQuery();
+        $model->setTable("sd_especialidades");
+        $model->setId("idespecialidad");
+
+        $espeData = $model
+            ->select("idespecialidad as id", "nombre")
+            ->where("eliminado", "0")
+            ->get();
+
         return $this->render($response, "Chio.Test.TestWeb", [
             "titulo_web" => "Test SITED",
             "url" => $request->getUri()->getPath(),
             "css" => [
                 "/assets/vendor/css/pages/ui-carousel.css",
-                "/assets/vendor/libs/swiper/swiper.css"
+                "/assets/vendor/libs/swiper/swiper.css",
+                "/node_modules/flatpickr/dist/flatpickr.min.css",
+                "/vendor/select2/select2/dist/css/select2.min.css",
+                "/css/select2-custom.css",
             ],
             "js" => [
                 "/assets/vendor/libs/swiper/swiper.js",
                 "/assets/js/ui-carousel.js",
+                "/node_modules/moment/min/moment.min.js",
+                "/node_modules/moment/locale/es.js",
+                "/node_modules/flatpickr/dist/flatpickr.min.js",
+                "/node_modules/flatpickr/dist/l10n/es.js",
+                "/vendor/select2/select2/dist/js/select2.full.min.js",
                 "/js/chio/test-web.js?v=" . time()
             ],
-            "user" => $userData
+            "user" => $userData,
+            "especialidades" => $espeData
         ]);
     }
 
@@ -392,5 +414,82 @@ class TestWebController extends Controller
         $response->getBody()->write($pdfContent);
 
         return $response;
+    }
+
+    /**
+     * Metodo para agenda una cita
+     */
+
+    public function agendarCita($request, $response)
+    {
+        $data = $this->sanitize($request->getParsedBody());
+        try {
+            $data = $this->sanitize($request->getParsedBody());
+
+            // Validar datos requeridos
+            $this->validateCitaData($data);
+
+            // Verificar si ya existe una cita para este médico, fecha y hora
+            if ($this->citasModel->citaExistente(null, $data['fecha'], $data['hora'])) {
+                throw new Exception("Ya existe una cita programada para este médico en la fecha y hora seleccionada");
+            }
+
+            // Agregar campos adicionales
+            $data['idusuario'] = $_SESSION["web_id"] ?? "0";
+            $data['fecha_registro'] = date('Y-m-d H:i:s');
+            $data['creado_por'] = $_SESSION["web_id"] ?? "0";
+            $data['id_estado_cita'] = 1;
+
+            $dataInsert = [
+                "idusuario" => $data['idusuario'] ?? "0",
+                "idpaciente" => $data['id_paciente'] ?? "0",
+                "idpersonal" => $data['medico'] ?? "0",
+                "id_estado_cita" => $data['id_estado_cita'] ?? "0",
+                "fecha" => $data['fecha'] ?? "0000-00-00",
+                "hora" => $data['hora'] ?? "00:00:00",
+                "observaciones" => $data['observaciones'] ?? "",
+                "fecha_registro" => $data['fecha_registro'] ?? date('Y-m-d H:i:s'),
+                "creado_por" => $data['creado_por'] ?? "0",
+            ];
+
+            // Guardar cita
+            $cita = $this->citasModel->create($dataInsert);
+            return $this->respondWithJson($response, [
+                'success' => true,
+                'message' => 'Cita guardada exitosamente',
+                'data' => $cita
+            ]);
+        } catch (Exception $e) {
+            return $this->respondWithError($response, $e->getMessage());
+        }
+    }
+
+    /**
+     * Valida los datos de una cita médica
+     */
+    private function validateCitaData($data)
+    {
+        $requiredFields = [
+            'id_paciente' => 'Paciente',
+            'medico' => 'Médico',
+            'fecha' => 'Fecha',
+            'hora' => 'Hora'
+        ];
+
+        foreach ($requiredFields as $field => $label) {
+            if (empty($data[$field])) {
+                throw new Exception("El campo {$label} es obligatorio");
+            }
+        }
+
+        // Validar fecha
+        if (!empty($data['fecha']) && !preg_match('/^\d{4}-\d{2}-\d{2}$/', $data['fecha'])) {
+            throw new Exception("El formato de fecha debe ser YYYY-MM-DD");
+        }
+
+        // Validar hora
+        if (!empty($data['hora']) && !preg_match('/^\d{2}:\d{2}:\d{2}$/', $data['hora'])) {
+            throw new Exception("El formato de hora debe ser HH:MM:SS");
+        }
     }
 }
