@@ -260,7 +260,7 @@ class Model
 
     public function offset($offset)
     {
-        $this->limit = " OFFSET {$offset}";
+        $this->offset = " OFFSET {$offset}";
         return $this;
     }
 
@@ -597,6 +597,10 @@ class Model
 
         if ($this->limit) {
             $sql .= $this->limit;
+        }
+
+        if ($this->offset) {
+            $sql .= $this->offset;
         }
 
         // Devuelve un arreglo con la consulta SQL y los parámetros
