@@ -147,36 +147,35 @@ function setupTestListeners() {
       abrirModalAgendarCita(testId);
       datosUsuario.id_test = testId;
     });
-
-    document
-      .getElementById("btn-confirmar-cita")
-      .addEventListener("click", function () {
-        console.log("Confirmar cita");
-
-        // Recopilar datos de la cita
-        const fecha = document.getElementById("fecha-cita").value;
-        const hora = document.getElementById("hora-cita").value;
-        const observaciones = document.getElementById("observaciones").value;
-        const especialidad =
-          document.getElementById("especialidad").value || "1"; // Valor por defecto si no está establecido
-        const medico = document.getElementById("medico").value;
-
-        // Crear objeto con los datos de la cita
-        const datosCita = {
-          fecha: fecha,
-          hora: hora,
-          observaciones: observaciones,
-          especialidad: especialidad,
-          medico: medico,
-          id_paciente: datosUsuario.id_paciente,
-          id_usuario: datosUsuario.id,
-          id_test: datosUsuario.id_test,
-        };
-
-        // Enviar la solicitud de cita
-        enviarSolicitudCita(datosCita);
-      });
   });
+
+  document
+    .getElementById("btn-confirmar-cita")
+    .addEventListener("click", function () {
+      console.log("Confirmar cita");
+
+      // Recopilar datos de la cita
+      const fecha = document.getElementById("fecha-cita").value;
+      const hora = document.getElementById("hora-cita").value;
+      const observaciones = document.getElementById("observaciones").value;
+      const especialidad = document.getElementById("especialidad").value || "1"; // Valor por defecto si no está establecido
+      const medico = document.getElementById("medico").value;
+
+      // Crear objeto con los datos de la cita
+      const datosCita = {
+        fecha: fecha,
+        hora: hora,
+        observaciones: observaciones,
+        especialidad: especialidad,
+        medico: medico,
+        id_paciente: datosUsuario.id_paciente,
+        id_usuario: datosUsuario.id,
+        id_test: datosUsuario.id_test,
+      };
+
+      // Enviar la solicitud de cita
+      enviarSolicitudCita(datosCita);
+    });
 
   // Exportar todos los tests
   const exportAllBtn = document.getElementById("exportAllBtn");
@@ -711,11 +710,17 @@ function actualizarHorasDisponibles(fecha, medicos) {
       if (horaSeleccionada) {
         const opcionSeleccionada = $(this).find("option:selected");
         const medicosIds = opcionSeleccionada.data("medicos");
-
         // Actualizar el campo oculto con el ID del médico
         if (medicosIds) {
-          // Si hay múltiples médicos, seleccionamos el primero
-          const idMedico = medicosIds.split(",")[0];
+          let idMedico;
+          // Verificar si medicosIds es ya un valor único o necesita ser dividido
+          if (typeof medicosIds === "string" && medicosIds.includes(",")) {
+            // Si hay múltiples médicos separados por coma, seleccionamos el primero
+            idMedico = medicosIds.split(",")[0];
+          } else {
+            // Si es un solo valor (string o número), lo usamos directamente
+            idMedico = medicosIds;
+          }
           $("#medico").val(idMedico);
           console.log("ID de médico seleccionado:", idMedico);
         } else {
